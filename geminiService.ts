@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { TechnicalSheet } from "./types.ts";
 
 // Inicializar AI directamente desde la variable de entorno.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: apiKey: import.meta.env.VITE_API_KEY });
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
