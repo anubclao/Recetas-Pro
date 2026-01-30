@@ -3,13 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { TechnicalSheet } from "./types";
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
-  // Inicialización dinámica para capturar la API_KEY más reciente del entorno
-  const apiKey = apiKey: import.meta.env.VITE_API_KEY;
-  if (!apiKey) {
-    throw new Error("MISSING_API_KEY");
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
     INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
@@ -25,7 +19,6 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
       config: {
         systemInstruction,
         responseMimeType: "application/json",
-        // Desactivamos thinking para mayor velocidad y evitar advertencias de "thoughtSignature" en consola
         thinkingConfig: { thinkingBudget: 0 },
         responseSchema: {
           type: Type.OBJECT,
@@ -91,31 +84,28 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
     });
 
     const text = response.text;
-    if (!text) throw new Error("La API no devolvió contenido de texto.");
+    if (!text) throw new Error("No text response");
     return JSON.parse(text) as TechnicalSheet;
   } catch (err: any) {
-    console.error("Error en generateTechnicalSheet:", err);
+    console.error("Error in generateTechnicalSheet:", err);
     throw err;
   }
 };
 
 export const generateDishImage = async (prompt: string): Promise<string> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format";
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: { parts: [{ text: `High-end food photography, professional plating, gourmet presentation: ${prompt}` }] },
+      contents: { parts: [{ text: `High-end food photography, gourmet plating: ${prompt}` }] },
       config: { imageConfig: { aspectRatio: "1:1" } }
     });
 
     const part = response.candidates[0].content.parts.find(p => p.inlineData);
-    if (!part?.inlineData) throw new Error("Sin datos de imagen");
+    if (!part?.inlineData) throw new Error("No image data found");
     return `data:image/png;base64,${part.inlineData.data}`;
   } catch (err) {
-    console.warn("Fallo generación de imagen, usando fallback:", err);
+    console.warn("Image gen failed:", err);
     return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format";
   }
 };
