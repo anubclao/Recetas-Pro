@@ -8,11 +8,6 @@
     <!-- Favicon SVG para evitar errores 404 -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>👨‍🍳</text></svg>">
     
-    <!-- Polyfill para process.env requerido por el SDK de Gemini en el navegador -->
-    <script>
-      window.process = window.process || { env: { API_KEY: "" } };
-    </script>
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     

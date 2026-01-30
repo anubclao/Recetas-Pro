@@ -38,5 +38,3 @@ export interface TechnicalSheet {
   imagePrompt: string;
   imageUrl?: string;
 }
-
-export type Language = 'es' | 'en';

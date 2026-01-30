@@ -1,33 +1,24 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { TechnicalSheet, Language } from "./types";
+import { TechnicalSheet } from "./types.ts";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
+// Inicializar AI directamente desde la variable de entorno.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-export const generateTechnicalSheet = async (dishName: string, lang: Language): Promise<TechnicalSheet> => {
-  const isEs = lang === 'es';
-  
-  const systemInstruction = isEs 
-    ? `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
-      INSTRUCCIÓN CRÍTICA DE IDIOMA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL. NO MEZCLES INGLÉS.
-      - Mercado: Colombia (Precios actuales en COP).
-      - Cálculo de Precio Sugerido: Aplica un markup del 230% sobre el costo total, lo que equivale a multiplicar por 3.3 (Costo x 3.3).
-      - Redondeo: Redondea el precio final sugerido a la centena más cercana (ej. 45.820 -> 45.800).
-      - Formato: Retorna estrictamente el JSON siguiendo el esquema proporcionado.`
-    : `YOU ARE AN EXPERT EXECUTIVE CHEF AND COST DIRECTOR WITH 20 YEARS OF EXPERIENCE.
-      CRITICAL LANGUAGE INSTRUCTION: THE ENTIRE RESPONSE MUST BE EXCLUSIVELY IN ENGLISH. DO NOT MIX SPANISH.
-      - Market: Colombia (Current prices in COP).
-      - Suggested Price Calculation: Apply a 230% markup over the total cost, which equals a multiplier of 3.3 (Cost x 3.3).
-      - Rounding: Round the final suggested price to the nearest hundred.
-      - Format: Strictly return the JSON following the provided schema.`;
+export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
+  const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
+    INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
+    - Mercado: Colombia (Precios actuales en COP).
+    - Cálculo de Precio Sugerido: Aplica un markup del 230% sobre el costo total, lo que equivale a multiplicar por 3.3 (Costo x 3.3).
+    - Redondeo: Redondea el precio final sugerido a la centena más cercana (ej. 45.820 -> 45.800).
+    - Formato: Retorna estrictamente el JSON siguiendo el esquema proporcionado.
+    - IMPORTANTE: Realiza los cálculos matemáticos de subtotal y total con extrema precisión.`;
 
-  const prompt = isEs
-    ? `Genera una ficha técnica gastronómica completa y ultra-precisa para el plato: "${dishName}". Recuerda: Todo en español, precios en COP, markup 3.3x.`
-    : `Generate a complete and ultra-precise gastronomic technical sheet for the dish: "${dishName}". Remember: Everything in English, prices in COP, 3.3x markup.`;
+  const promptText = `Genera una ficha técnica gastronómica completa y ultra-precisa para el plato: "${dishName}". Recuerda: Todo en español, precios en COP, markup 3.3x.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: prompt,
+    contents: [{ parts: [{ text: promptText }] }],
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -58,7 +49,8 @@ export const generateTechnicalSheet = async (dishName: string, lang: Language): 
               totalCost: { type: Type.NUMBER },
               marginPercentage: { type: Type.NUMBER },
               suggestedPrice: { type: Type.NUMBER }
-            }
+            },
+            required: ["totalCost", "marginPercentage", "suggestedPrice"]
           },
           miseEnPlace: { type: Type.ARRAY, items: { type: Type.STRING } },
           preparationSteps: {
@@ -70,7 +62,8 @@ export const generateTechnicalSheet = async (dishName: string, lang: Language): 
                 description: { type: Type.STRING },
                 temp: { type: Type.STRING },
                 time: { type: Type.STRING }
-              }
+              },
+              required: ["step", "description"]
             }
           },
           plating: { type: Type.STRING },
@@ -92,20 +85,26 @@ export const generateTechnicalSheet = async (dishName: string, lang: Language): 
   });
 
   const text = response.text;
-  if (!text) throw new Error("No response from AI");
-  return JSON.parse(text) as TechnicalSheet;
+  if (!text) throw new Error("La API devolvió un texto vacío.");
+  
+  try {
+    return JSON.parse(text) as TechnicalSheet;
+  } catch (e) {
+    console.error("Error al parsear JSON:", text);
+    throw new Error("Estructura JSON inválida en la respuesta.");
+  }
 };
 
 export const generateDishImage = async (prompt: string): Promise<string> => {
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: {
+    contents: [{
       parts: [
         {
-          text: `Fine dining restaurant plating of ${prompt}. Modern culinary style, bright soft lighting, high contrast, clean background, 4k macro photography.`,
+          text: `Fotografía profesional de comida: ${prompt}. Emplatado de restaurante gourmet, profundidad de campo reducida, iluminación natural, presentación elegante.`,
         },
       ],
-    },
+    }],
     config: {
       imageConfig: {
         aspectRatio: "1:1"
@@ -113,11 +112,15 @@ export const generateDishImage = async (prompt: string): Promise<string> => {
     }
   });
 
+  if (!response.candidates?.[0]?.content?.parts) {
+    throw new Error("No se pudo generar la imagen.");
+  }
+
   for (const part of response.candidates[0].content.parts) {
     if (part.inlineData) {
       return `data:image/png;base64,${part.inlineData.data}`;
     }
   }
   
-  throw new Error("Failed to generate image");
+  throw new Error("No se encontró la parte de imagen en la respuesta.");
 };

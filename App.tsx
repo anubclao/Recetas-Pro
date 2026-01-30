@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { generateTechnicalSheet, generateDishImage } from './geminiService.ts';
-import { TechnicalSheet, Language } from './types.ts';
+import { TechnicalSheet } from './types.ts';
 import { 
   ChefHat, 
   Download, 
@@ -14,110 +14,17 @@ import {
   FileText,
   Thermometer,
   Zap,
-  Globe,
   ImageIcon,
   Loader2,
   ChevronRight
 } from 'lucide-react';
 
-const translations = {
-  es: {
-    title: "CHEFMASTER",
-    subtitle: "Gestión de Costos & Fichas Técnicas",
-    placeholder: "Nombre del plato (ej. Posta Cartagenera)",
-    generate: "Generar Ficha",
-    generating: "Cocinando...",
-    loadingText: "Analizando costos en COP...",
-    optimizing: "Generando imagen y procesos...",
-    welcome: "Panel de Control de Costos",
-    welcomeDesc: "Cree fichas técnicas profesionales con precisión financiera y visual para su restaurante.",
-    export: "Descargar PDF",
-    exporting: "Generando...",
-    suggestedPrice: "Precio Sugerido",
-    costingTitle: "Estructura de Costos de Insumos",
-    ingredient: "Ingrediente",
-    amount: "Cantidad",
-    unitCost: "Costo (g/ml)",
-    subtotal: "Subtotal",
-    totalCost: "Costo Total Unitario",
-    foodCost: "Food Cost Target",
-    margin: "Utilidad Bruta",
-    markup: "Multiplicador (3.3x)",
-    miseEnPlace: "Mise en Place",
-    steps: "Proceso de Elaboración",
-    plating: "Presentación y Estética",
-    variants: "Variantes y Recomendaciones",
-    allergens: "Mapa de Alérgenos",
-    qc: "Control de Calidad (QC)",
-    conservation: "Vida Útil",
-    refrig: "Refrigeración",
-    freeze: "Congelación",
-    imagePrompt: "Concepto Visual de IA",
-    error: "Error en la conexión. Intente con otro plato o verifique su conexión.",
-    author: "Firma Chef Responsable",
-    approval: "Firma Gerencia / Costos",
-    imageLabel: "Visualización Sugerida",
-    docHeader: "Documento Técnico Oficial",
-    rev: "REV:",
-    finalPriceLabel: "Final Cliente",
-    footerText: "Precisión Gastronómica",
-    prepPrefix: "Preparación:",
-    scrollHint: "Deslice para ver más"
-  },
-  en: {
-    title: "CHEFMASTER",
-    subtitle: "Cost Management & Technical Sheets",
-    placeholder: "Dish name (e.g. Braised Short Ribs)",
-    generate: "Generate Sheet",
-    generating: "Cooking...",
-    loadingText: "Analyzing COP costs...",
-    optimizing: "Generating image and workflows...",
-    welcome: "Cost Control Dashboard",
-    welcomeDesc: "Create professional technical sheets with financial and visual precision for your restaurant.",
-    export: "Download PDF",
-    exporting: "Generating...",
-    suggestedPrice: "Suggested Price",
-    costingTitle: "Resource Costing Structure",
-    ingredient: "Ingredient",
-    amount: "Quantity",
-    unitCost: "Cost (g/ml)",
-    subtotal: "Subtotal",
-    totalCost: "Total Unit Cost",
-    foodCost: "Food Cost Target",
-    margin: "Gross Utility",
-    markup: "Multiplier (3.3x)",
-    miseEnPlace: "Mise en Place",
-    steps: "Preparation Workflow",
-    plating: "Plating and Aesthetics",
-    variants: "Variants & Chef Tips",
-    allergens: "Allergen Map",
-    qc: "Quality Control (QC)",
-    conservation: "Shelf Life",
-    refrig: "Refrigeration",
-    freeze: "Freezing",
-    imagePrompt: "AI Visual Concept",
-    error: "Connection error. Please check your connection or try another dish.",
-    author: "Executive Chef Signature",
-    approval: "Management / Cost Approval",
-    imageLabel: "Suggested Visualization",
-    docHeader: "Official Technical Document",
-    rev: "REV:",
-    finalPriceLabel: "Final Customer",
-    footerText: "Gastronomic Precision",
-    prepPrefix: "Prep:",
-    scrollHint: "Scroll to see more"
-  }
-};
-
 const App: React.FC = () => {
   const [dishName, setDishName] = useState('');
-  const [lang, setLang] = useState<Language>('es');
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [sheet, setSheet] = useState<TechnicalSheet | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const t = translations[lang];
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,11 +33,11 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await generateTechnicalSheet(dishName, lang);
+      const data = await generateTechnicalSheet(dishName);
       const imageUrl = await generateDishImage(data.dishName + " high-end restaurant food photography");
       setSheet({ ...data, imageUrl });
     } catch (err) {
-      setError(t.error);
+      setError("Error en la conexión. Intente con otro plato o verifique su conexión.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -159,8 +66,8 @@ const App: React.FC = () => {
       // @ts-ignore
       await html2pdf().from(element).set(opt).save();
     } catch (err) {
-      console.error("PDF Generation error:", err);
-      alert(lang === 'es' ? "Error al generar el PDF. Intente nuevamente." : "Error generating PDF. Please try again.");
+      console.error("Error al generar PDF:", err);
+      alert("Error al generar el PDF. Intente nuevamente.");
     } finally {
       setExporting(false);
     }
@@ -177,33 +84,18 @@ const App: React.FC = () => {
               </div>
               <div className="flex flex-col">
                 <h1 className="text-xl lg:text-2xl font-black leading-none flex items-center gap-2">
-                  {t.title} <span className="text-[8px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded font-black italic">PRO</span>
+                  CHEFMASTER <span className="text-[8px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded font-black italic">PRO</span>
                 </h1>
-                <p className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 tracking-tighter">{t.subtitle}</p>
+                <p className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 tracking-tighter">Gestión de Costos & Fichas Técnicas</p>
               </div>
             </div>
-            <button 
-              onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setSheet(null); }}
-              className="md:hidden flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-full text-[10px] font-black uppercase text-slate-300"
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === 'es' ? 'EN' : 'ES'}
-            </button>
           </div>
           
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:max-w-xl">
-            <button 
-              onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setSheet(null); }}
-              className="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 px-5 py-2.5 rounded-full hover:bg-slate-700 transition-all text-[10px] font-black uppercase tracking-widest text-slate-300 whitespace-nowrap"
-            >
-              <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === 'es' ? 'English Version' : 'Versión Española'}
-            </button>
-
             <form onSubmit={handleGenerate} className="relative flex-1 group w-full">
               <input
                 type="text"
-                placeholder={t.placeholder}
+                placeholder="Nombre del plato (ej. Posta Cartagenera)"
                 className="w-full bg-slate-800 border-2 border-slate-700 rounded-full py-2.5 px-6 pl-11 focus:outline-none focus:border-amber-500 transition-all text-sm text-white placeholder-slate-500"
                 value={dishName}
                 onChange={(e) => setDishName(e.target.value)}
@@ -214,7 +106,7 @@ const App: React.FC = () => {
                 disabled={loading}
                 className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-[10px] uppercase px-5 py-1.5 rounded-full shadow-lg disabled:opacity-50 transition-transform active:scale-95"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t.generate}
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Generar Ficha"}
               </button>
             </form>
           </div>
@@ -228,8 +120,8 @@ const App: React.FC = () => {
               <Zap className="w-20 h-20 text-amber-500 animate-pulse" />
               <Loader2 className="w-24 h-24 text-amber-200 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30" />
             </div>
-            <p className="text-2xl font-black text-slate-800 italic text-center">{t.loadingText}</p>
-            <p className="text-sm font-medium mt-3 text-slate-500">{t.optimizing}</p>
+            <p className="text-2xl font-black text-slate-800 italic text-center">Analizando costos en COP...</p>
+            <p className="text-sm font-medium mt-3 text-slate-500">Generando imagen y procesos...</p>
           </div>
         )}
 
@@ -245,8 +137,8 @@ const App: React.FC = () => {
             <div className="bg-slate-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner border border-slate-100">
               <UtensilsCrossed className="w-10 h-10 text-slate-200" />
             </div>
-            <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">{t.welcome}</h2>
-            <p className="text-slate-500 max-w-sm mx-auto font-medium text-lg leading-relaxed">{t.welcomeDesc}</p>
+            <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Panel de Control de Costos</h2>
+            <p className="text-slate-500 max-w-sm mx-auto font-medium text-lg leading-relaxed">Cree fichas técnicas profesionales con precisión financiera y visual para su restaurante.</p>
           </div>
         )}
 
@@ -255,7 +147,7 @@ const App: React.FC = () => {
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4">
                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 bg-white px-5 py-2.5 rounded-full border border-slate-200 uppercase shadow-sm">
                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                 ID: FT-{Math.floor(Math.random()*9000)+1000} | {t.rev} 2024
+                 ID: FT-{Math.floor(Math.random()*9000)+1000} | REV: 2024
                </div>
                <button 
                   onClick={handleExportPDF}
@@ -263,9 +155,9 @@ const App: React.FC = () => {
                   className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 font-black text-xs disabled:opacity-70 active:scale-95"
                 >
                   {exporting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin text-amber-500" /> {t.exporting}</>
+                    <><Loader2 className="w-4 h-4 animate-spin text-amber-500" /> Generando...</>
                   ) : (
-                    <><Download className="w-4 h-4 text-amber-500" /> {t.export}</>
+                    <><Download className="w-4 h-4 text-amber-500" /> Descargar PDF</>
                   )}
                 </button>
             </div>
@@ -275,12 +167,12 @@ const App: React.FC = () => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-6">
                     <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    <span className="text-amber-500 font-black text-[10px] uppercase tracking-[0.5em]">{t.docHeader}</span>
+                    <span className="text-amber-500 font-black text-[10px] uppercase tracking-[0.5em]">Documento Técnico Oficial</span>
                   </div>
                   <h2 className="text-4xl md:text-7xl font-black uppercase mb-6 leading-tight tracking-tighter">{sheet.dishName}</h2>
                   <div className="flex flex-wrap items-center gap-6 lg:gap-10 text-slate-400 font-black text-xs uppercase tracking-widest">
                     <span className="flex items-center gap-3 border-r border-slate-700 pr-10 py-1"><UtensilsCrossed className="w-5 h-5 text-amber-500" /> {sheet.category}</span>
-                    <span className="flex items-center gap-3 py-1"><Clock className="w-5 h-5 text-amber-500" /> {t.prepPrefix} {sheet.prepTime}</span>
+                    <span className="flex items-center gap-3 py-1"><Clock className="w-5 h-5 text-amber-500" /> Preparación: {sheet.prepTime}</span>
                   </div>
                   <p className="mt-10 text-slate-300 italic text-xl md:text-2xl border-l-8 border-amber-500/30 pl-8 leading-relaxed max-w-4xl py-2">
                     "{sheet.description}"
@@ -290,10 +182,10 @@ const App: React.FC = () => {
                 <div className="flex flex-col md:flex-row lg:flex-col items-center lg:items-end gap-10 shrink-0">
                   <div className="bg-white/10 backdrop-blur-md p-8 rounded-[2.5rem] text-center border border-white/10 w-full sm:min-w-[300px] shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-3xl -mr-10 -mt-10" />
-                    <p className="text-[10px] lg:text-xs uppercase font-black text-amber-500 mb-3 tracking-widest">{t.suggestedPrice}</p>
+                    <p className="text-[10px] lg:text-xs uppercase font-black text-amber-500 mb-3 tracking-widest">Precio Sugerido</p>
                     <p className="text-5xl md:text-7xl font-black text-white tracking-tighter">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
                     <div className="h-0.5 bg-amber-500/30 w-12 mx-auto my-4 rounded-full" />
-                    <p className="text-[10px] lg:text-xs uppercase font-bold text-slate-500 tracking-[0.2em]">COP | {t.finalPriceLabel}</p>
+                    <p className="text-[10px] lg:text-xs uppercase font-bold text-slate-500 tracking-[0.2em]">COP | Final Cliente</p>
                   </div>
                   {sheet.imageUrl && (
                     <div className="relative group">
@@ -317,10 +209,10 @@ const App: React.FC = () => {
                       <div className="bg-emerald-100 p-3 rounded-2xl">
                         <DollarSign className="w-8 h-8 text-emerald-600" />
                       </div>
-                      <h3 className="text-3xl font-black uppercase tracking-tighter text-slate-900">{t.costingTitle}</h3>
+                      <h3 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Estructura de Costos de Insumos</h3>
                     </div>
                     <div className="hidden sm:flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase italic">
-                      <ChevronRight className="w-4 h-4" /> {t.scrollHint}
+                      <ChevronRight className="w-4 h-4" /> Deslice para ver más
                     </div>
                   </div>
                   
@@ -328,10 +220,10 @@ const App: React.FC = () => {
                     <table className="w-full text-left border-collapse min-w-[750px]">
                       <thead className="bg-slate-50 text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-slate-400 border-b-2 border-slate-100">
                         <tr>
-                          <th className="px-8 py-6">{t.ingredient}</th>
-                          <th className="px-8 py-6 text-right">{t.amount}</th>
-                          <th className="px-8 py-6 text-right">{t.unitCost}</th>
-                          <th className="px-8 py-6 text-right bg-slate-100/40">{t.subtotal}</th>
+                          <th className="px-8 py-6">Ingrediente</th>
+                          <th className="px-8 py-6 text-right">Cantidad</th>
+                          <th className="px-8 py-6 text-right">Costo (g/ml)</th>
+                          <th className="px-8 py-6 text-right bg-slate-100/40">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -346,7 +238,7 @@ const App: React.FC = () => {
                       </tbody>
                       <tfoot className="bg-slate-900 text-white font-black">
                         <tr>
-                          <td colSpan={3} className="px-8 py-8 text-right uppercase text-xs opacity-50 tracking-[0.3em] font-black">{t.totalCost}</td>
+                          <td colSpan={3} className="px-8 py-8 text-right uppercase text-xs opacity-50 tracking-[0.3em] font-black">Costo Total Unitario</td>
                           <td className="px-8 py-8 text-right text-3xl md:text-4xl text-amber-500 tracking-tighter">${sheet.financials.totalCost.toLocaleString('es-CO')}</td>
                         </tr>
                       </tfoot>
@@ -356,17 +248,17 @@ const App: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
                     <div className="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-100 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-emerald-600 mb-2 tracking-widest">{t.foodCost}</p>
+                      <p className="text-[10px] uppercase font-black text-emerald-600 mb-2 tracking-widest">Food Cost Target</p>
                       <p className="text-3xl font-black text-emerald-800">30.3%</p>
                     </div>
                     <div className="bg-blue-50 p-8 rounded-[2rem] border-2 border-blue-100 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-blue-600 mb-2 tracking-widest">{t.margin}</p>
+                      <p className="text-[10px] uppercase font-black text-blue-600 mb-2 tracking-widest">Utilidad Bruta</p>
                       <p className="text-3xl font-black text-blue-800">${(sheet.financials.suggestedPrice - sheet.financials.totalCost).toLocaleString('es-CO')}</p>
                     </div>
                     <div className="bg-amber-50 p-8 rounded-[2rem] border-2 border-amber-100 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-amber-600 mb-2 tracking-widest">{t.markup}</p>
+                      <p className="text-[10px] uppercase font-black text-amber-600 mb-2 tracking-widest">Multiplicador (3.3x)</p>
                       <p className="text-3xl font-black text-amber-800">3.3x</p>
                     </div>
                   </div>
@@ -378,7 +270,7 @@ const App: React.FC = () => {
                       <div className="bg-amber-500 text-white p-3 rounded-2xl">
                         <Clock className="w-6 h-6" />
                       </div>
-                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">{t.miseEnPlace}</h3>
+                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Mise en Place</h3>
                     </div>
                     <ul className="space-y-6">
                       {sheet.miseEnPlace.map((item, idx) => (
@@ -395,7 +287,7 @@ const App: React.FC = () => {
                       <div className="bg-indigo-600 text-white p-3 rounded-2xl">
                         <FileText className="w-6 h-6" />
                       </div>
-                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">{t.steps}</h3>
+                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Proceso de Elaboración</h3>
                     </div>
                     <div className="space-y-12">
                       {sheet.preparationSteps.map((s) => (
@@ -427,17 +319,17 @@ const App: React.FC = () => {
                   <div className="lg:col-span-2 relative z-10">
                     <div className="flex items-center gap-4 mb-8">
                       <div className="w-2 h-10 bg-amber-500 rounded-full" />
-                      <h3 className="text-4xl font-black text-white uppercase tracking-tighter">{t.plating}</h3>
+                      <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Presentación y Estética</h3>
                     </div>
                     <p className="text-2xl text-slate-300 italic mb-14 leading-relaxed font-medium">"{sheet.plating}"</p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/10">
                       <div>
-                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">{t.variants}</h4>
+                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">Variantes y Recomendaciones</h4>
                         <p className="text-base text-slate-400 font-medium leading-relaxed">{sheet.variants}</p>
                       </div>
                       <div>
-                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">{t.allergens}</h4>
+                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">Mapa de Alérgenos</h4>
                         <div className="flex flex-wrap gap-3">
                           {sheet.allergens.map((alg, i) => (
                             <span key={i} className="text-[10px] font-black bg-red-500/20 text-red-400 px-5 py-2 rounded-full border border-red-500/30 uppercase tracking-tighter">{alg}</span>
@@ -449,7 +341,7 @@ const App: React.FC = () => {
 
                   <div className="bg-white/5 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 shadow-3xl relative z-10">
                     <h3 className="text-2xl font-black text-emerald-400 uppercase mb-8 tracking-tighter flex items-center gap-3">
-                      <CheckCircle2 className="w-7 h-7" /> {t.qc}
+                      <CheckCircle2 className="w-7 h-7" /> Control de Calidad (QC)
                     </h3>
                     <ul className="space-y-6 mb-12">
                       {sheet.qcChecklist.map((q, i) => (
@@ -459,14 +351,14 @@ const App: React.FC = () => {
                       ))}
                     </ul>
                     <div className="pt-10 border-t border-white/10">
-                      <h4 className="text-[10px] uppercase font-black text-slate-500 mb-6 tracking-[0.2em]">{t.conservation}</h4>
+                      <h4 className="text-[10px] uppercase font-black text-slate-500 mb-6 tracking-[0.2em]">Vida Útil</h4>
                       <div className="space-y-5">
                         <div className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5">
-                          <span className="text-slate-400 uppercase font-black text-[10px]">{t.refrig}</span>
+                          <span className="text-slate-400 uppercase font-black text-[10px]">Refrigeración</span>
                           <span className="font-black text-white">{sheet.conservation.refrigeration}</span>
                         </div>
                         <div className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5">
-                          <span className="text-slate-400 uppercase font-black text-[10px]">{t.freeze}</span>
+                          <span className="text-slate-400 uppercase font-black text-[10px]">Congelación</span>
                           <span className="font-black text-white">{sheet.conservation.freezing}</span>
                         </div>
                       </div>
@@ -477,12 +369,12 @@ const App: React.FC = () => {
                 <div className="hidden sm:grid grid-cols-2 gap-40 mt-40 pt-20 border-t-4 border-slate-100 no-print">
                    <div className="text-center">
                      <div className="h-1 bg-slate-300 mb-8 mx-auto w-72 rounded-full" />
-                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">{t.author}</p>
+                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">Firma Chef Responsable</p>
                      <p className="text-sm font-black text-slate-900 uppercase tracking-widest">CHEFMASTER AI CERTIFIED</p>
                    </div>
                    <div className="text-center">
                      <div className="h-1 bg-slate-300 mb-8 mx-auto w-72 rounded-full" />
-                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">{t.approval}</p>
+                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">Firma Gerencia / Costos</p>
                      <p className="text-sm font-black text-slate-900 uppercase tracking-widest">OPERATIONS MANAGEMENT</p>
                    </div>
                 </div>
@@ -502,7 +394,7 @@ const App: React.FC = () => {
             <ChefHat className="w-5 h-5 text-amber-500" />
           </div>
           <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none">
-            © {new Date().getFullYear()} {t.title} | {t.footerText}
+            © {new Date().getFullYear()} CHEFMASTER | Precisión Gastronómica
           </p>
         </div>
       </footer>
