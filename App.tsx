@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { generateTechnicalSheet, generateDishImage } from './geminiService.ts';
-import { TechnicalSheet } from './types.ts';
+import { generateTechnicalSheet, generateDishImage } from './geminiService';
+import { TechnicalSheet, Ingredient } from './types';
 import { 
   ChefHat, 
   Download, 
@@ -16,8 +16,49 @@ import {
   Zap,
   ImageIcon,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  Beef,
+  Carrot,
+  Milk,
+  Apple,
+  Wheat,
+  Droplets,
+  Fish,
+  Egg,
+  Leaf,
+  CircleDashed
 } from 'lucide-react';
+
+const IngredientIcon: React.FC<{ category: Ingredient['category'] }> = ({ category }) => {
+  const baseClass = "w-5 h-5";
+  switch (category) {
+    case 'carne': return <Beef className={`${baseClass} text-red-600`} />;
+    case 'vegetal': return <Carrot className={`${baseClass} text-emerald-600`} />;
+    case 'lacteo': return <Milk className={`${baseClass} text-blue-500`} />;
+    case 'fruta': return <Apple className={`${baseClass} text-rose-500`} />;
+    case 'grano': return <Wheat className={`${baseClass} text-amber-600`} />;
+    case 'especia': return <Leaf className={`${baseClass} text-green-700`} />;
+    case 'liquido': return <Droplets className={`${baseClass} text-sky-500`} />;
+    case 'pescado': return <Fish className={`${baseClass} text-cyan-600`} />;
+    case 'huevo': return <Egg className={`${baseClass} text-yellow-600`} />;
+    default: return <CircleDashed className={`${baseClass} text-slate-400`} />;
+  }
+};
+
+const getCategoryBg = (category: Ingredient['category']) => {
+  switch (category) {
+    case 'carne': return 'bg-red-50';
+    case 'vegetal': return 'bg-emerald-50';
+    case 'lacteo': return 'bg-blue-50';
+    case 'fruta': return 'bg-rose-50';
+    case 'grano': return 'bg-amber-50';
+    case 'especia': return 'bg-green-50';
+    case 'liquido': return 'bg-sky-50';
+    case 'pescado': return 'bg-cyan-50';
+    case 'huevo': return 'bg-yellow-50';
+    default: return 'bg-slate-50';
+  }
+};
 
 const App: React.FC = () => {
   const [dishName, setDishName] = useState('');
@@ -222,14 +263,24 @@ const App: React.FC = () => {
                         <tr>
                           <th className="px-8 py-6">Ingrediente</th>
                           <th className="px-8 py-6 text-right">Cantidad</th>
-                          <th className="px-8 py-6 text-right">Costo (g/ml)</th>
+                          <th className="px-8 py-6 text-right">Costo (u)</th>
                           <th className="px-8 py-6 text-right bg-slate-100/40">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {sheet.ingredients.map((ing, i) => (
                           <tr key={i} className="hover:bg-slate-50 transition-colors group">
-                            <td className="px-8 py-6 font-bold text-slate-800 text-lg">{ing.name}</td>
+                            <td className="px-8 py-6 font-bold text-slate-800 text-lg">
+                              <div className="flex items-center gap-4">
+                                <div className={`p-2 rounded-xl ${getCategoryBg(ing.category)} group-hover:scale-110 transition-transform`}>
+                                  <IngredientIcon category={ing.category} />
+                                </div>
+                                <div className="flex flex-col">
+                                  <span>{ing.name}</span>
+                                  <span className="text-[10px] uppercase text-slate-400 font-black tracking-widest">{ing.category}</span>
+                                </div>
+                              </div>
+                            </td>
                             <td className="px-8 py-6 text-right text-slate-600 font-bold text-base">{ing.amount} {ing.unit}</td>
                             <td className="px-8 py-6 text-right text-slate-500 tabular-nums font-medium">${ing.unitCost.toLocaleString('es-CO')}</td>
                             <td className="px-8 py-6 text-right font-black text-slate-900 bg-slate-50/20 tabular-nums text-lg group-hover:bg-slate-100/50 transition-colors">${ing.subtotal.toLocaleString('es-CO')}</td>

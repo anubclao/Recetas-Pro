@@ -1,20 +1,20 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { TechnicalSheet } from "./types.ts";
+import { TechnicalSheet } from "./types";
 
 // Inicializar AI directamente desde la variable de entorno.
-const ai = new GoogleGenAI({ apiKey: apiKey: import.meta.env.VITE_API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
     INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
     - Mercado: Colombia (Precios actuales en COP).
     - Cálculo de Precio Sugerido: Aplica un markup del 230% sobre el costo total, lo que equivale a multiplicar por 3.3 (Costo x 3.3).
-    - Redondeo: Redondea el precio final sugerido a la centena más cercana (ej. 45.820 -> 45.800).
-    - Formato: Retorna estrictamente el JSON siguiendo el esquema proporcionado.
-    - IMPORTANTE: Realiza los cálculos matemáticos de subtotal y total con extrema precisión.`;
+    - Redondeo: Redondea el precio final sugerido a la centena más cercana.
+    - Categorización de Ingredientes: Debes asignar obligatoriamente una de estas categorías a cada ingrediente: 'carne', 'vegetal', 'lacteo', 'fruta', 'grano', 'especia', 'liquido', 'pescado', 'huevo', 'otros'.
+    - Formato: Retorna estrictamente el JSON siguiendo el esquema proporcionado.`;
 
-  const promptText = `Genera una ficha técnica gastronómica completa y ultra-precisa para el plato: "${dishName}". Recuerda: Todo en español, precios en COP, markup 3.3x.`;
+  const promptText = `Genera una ficha técnica gastronómica completa y ultra-precisa para el plato: "${dishName}". Incluye categorización de ingredientes para representación visual.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -38,9 +38,13 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
                 amount: { type: Type.NUMBER },
                 unit: { type: Type.STRING },
                 unitCost: { type: Type.NUMBER },
-                subtotal: { type: Type.NUMBER }
+                subtotal: { type: Type.NUMBER },
+                category: { 
+                  type: Type.STRING, 
+                  enum: ['carne', 'vegetal', 'lacteo', 'fruta', 'grano', 'especia', 'liquido', 'pescado', 'huevo', 'otros'] 
+                }
               },
-              required: ["name", "amount", "unit", "unitCost", "subtotal"]
+              required: ["name", "amount", "unit", "unitCost", "subtotal", "category"]
             }
           },
           financials: {

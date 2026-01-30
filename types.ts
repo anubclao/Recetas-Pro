@@ -1,10 +1,11 @@
 
 export interface Ingredient {
   name: string;
-  amount: number; // Grams or ML
+  amount: number; // Gramos o ML
   unit: string;
-  unitCost: number; // Cost per Gram/ML
+  unitCost: number; // Costo por Gramo/ML
   subtotal: number;
+  category: 'carne' | 'vegetal' | 'lacteo' | 'fruta' | 'grano' | 'especia' | 'liquido' | 'pescado' | 'huevo' | 'otros';
 }
 
 export interface Financials {
