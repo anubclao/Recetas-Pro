@@ -42,7 +42,7 @@ const translations = {
     totalCost: "Costo Total Unitario",
     foodCost: "Food Cost Target",
     margin: "Utilidad Bruta",
-    markup: "Multiplicador (230%)",
+    markup: "Multiplicador (3.3x)",
     miseEnPlace: "Mise en Place",
     steps: "Proceso de Elaboración",
     plating: "Presentación y Estética",
@@ -85,7 +85,7 @@ const translations = {
     totalCost: "Total Unit Cost",
     foodCost: "Food Cost Target",
     margin: "Gross Utility",
-    markup: "Multiplier (230%)",
+    markup: "Multiplier (3.3x)",
     miseEnPlace: "Mise en Place",
     steps: "Preparation Workflow",
     plating: "Plating and Aesthetics",
@@ -143,7 +143,6 @@ const App: React.FC = () => {
 
     setExporting(true);
     try {
-      // Configuramos html2pdf para que capture el elemento con alta calidad
       const opt = {
         margin: [10, 10, 10, 10],
         filename: `ChefMaster_${sheet.dishName.replace(/\s+/g, '_')}.pdf`,
@@ -152,7 +151,7 @@ const App: React.FC = () => {
           scale: 2, 
           useCORS: true,
           letterRendering: true,
-          windowWidth: 1200 // Asegura que capture el layout de escritorio
+          windowWidth: 1200 
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
@@ -169,7 +168,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
-      {/* Header Fijo */}
       <header className="bg-slate-900 text-white py-4 px-4 no-print shadow-2xl sticky top-0 z-50 border-b border-slate-800">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3 w-full md:w-auto justify-between">
@@ -184,7 +182,6 @@ const App: React.FC = () => {
                 <p className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 tracking-tighter">{t.subtitle}</p>
               </div>
             </div>
-            
             <button 
               onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setSheet(null); }}
               className="md:hidden flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-full text-[10px] font-black uppercase text-slate-300"
@@ -200,7 +197,7 @@ const App: React.FC = () => {
               className="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 px-5 py-2.5 rounded-full hover:bg-slate-700 transition-all text-[10px] font-black uppercase tracking-widest text-slate-300 whitespace-nowrap"
             >
               <Globe className="w-3.5 h-3.5 text-amber-500" />
-              {lang === 'es' ? 'English' : 'Español'}
+              {lang === 'es' ? 'English Version' : 'Versión Española'}
             </button>
 
             <form onSubmit={handleGenerate} className="relative flex-1 group w-full">
@@ -224,7 +221,6 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Container */}
       <main className="max-w-6xl mx-auto mt-6 px-4 w-full flex-1 mb-20 overflow-x-hidden">
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
@@ -256,7 +252,6 @@ const App: React.FC = () => {
 
         {sheet && !loading && (
           <div className="animate-in fade-in zoom-in-95 duration-500">
-            {/* Acciones de Cabecera */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4">
                <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 bg-white px-5 py-2.5 rounded-full border border-slate-200 uppercase shadow-sm">
                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -275,9 +270,7 @@ const App: React.FC = () => {
                 </button>
             </div>
 
-            {/* AREA IMPRIMIBLE / PDF */}
             <div className="bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-slate-200" id="printable-area">
-              {/* Encabezado del Documento */}
               <div className="bg-slate-900 p-8 md:p-14 text-white flex flex-col lg:flex-row justify-between gap-12 border-b-8 border-amber-500">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-6">
@@ -295,7 +288,7 @@ const App: React.FC = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row lg:flex-col items-center lg:items-end gap-10 shrink-0">
-                  <div className="bg-white/10 backdrop-blur-md p-8 rounded-[2.5rem] text-center border border-white/10 w-full sm:min-w-[300px] shadow-2xl relative overflow-hidden group">
+                  <div className="bg-white/10 backdrop-blur-md p-8 rounded-[2.5rem] text-center border border-white/10 w-full sm:min-w-[300px] shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-3xl -mr-10 -mt-10" />
                     <p className="text-[10px] lg:text-xs uppercase font-black text-amber-500 mb-3 tracking-widest">{t.suggestedPrice}</p>
                     <p className="text-5xl md:text-7xl font-black text-white tracking-tighter">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
@@ -317,9 +310,7 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              {/* Cuerpo del Documento */}
               <div className="p-8 md:p-14 space-y-16">
-                {/* Tabla de Costeo */}
                 <div>
                   <div className="flex items-center justify-between mb-8 border-b-4 border-slate-100 pb-6">
                     <div className="flex items-center gap-4">
@@ -362,7 +353,6 @@ const App: React.FC = () => {
                     </table>
                   </div>
 
-                  {/* Metricas de Rentabilidad */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
                     <div className="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-100 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rotate-45 -mr-8 -mt-8" />
@@ -382,7 +372,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Seccion Tecnica */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                   <section className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 shadow-inner">
                     <div className="flex items-center gap-4 mb-10">
@@ -433,7 +422,6 @@ const App: React.FC = () => {
                   </section>
                 </div>
 
-                {/* Estetica & Calidad */}
                 <div className="bg-slate-900 p-10 md:p-16 rounded-[4rem] text-white grid grid-cols-1 lg:grid-cols-3 gap-16 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[120px] rounded-full -mr-32 -mt-32" />
                   <div className="lg:col-span-2 relative z-10">
@@ -486,7 +474,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Firmas de Documento (Solo en PDF) */}
                 <div className="hidden sm:grid grid-cols-2 gap-40 mt-40 pt-20 border-t-4 border-slate-100 no-print">
                    <div className="text-center">
                      <div className="h-1 bg-slate-300 mb-8 mx-auto w-72 rounded-full" />
@@ -502,7 +489,6 @@ const App: React.FC = () => {
               </div>
             </div>
             
-            {/* Disclaimer no imprimible */}
             <p className="mt-8 text-center text-[10px] text-slate-400 no-print max-w-2xl mx-auto px-6 font-medium">
               Este documento es una estimación generada por IA profesional. Los costos deben ser validados por el departamento de compras y finanzas del establecimiento.
             </p>
@@ -510,7 +496,6 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer Branding */}
       <footer className="py-16 text-center no-print">
         <div className="inline-flex items-center gap-4 bg-white px-10 py-4 rounded-full border border-slate-200 shadow-2xl shadow-slate-200/50 group hover:border-amber-500 transition-colors">
           <div className="bg-slate-100 p-2 rounded-full group-hover:bg-amber-100 transition-colors">
