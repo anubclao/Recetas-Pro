@@ -4,7 +4,7 @@ import { TechnicalSheet } from "./types";
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
   // Inicializamos dentro de la función para asegurar que process.env esté actualizado
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
   
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
     INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
