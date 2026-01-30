@@ -12,6 +12,8 @@ export interface Financials {
   totalCost: number;
   marginPercentage: number;
   suggestedPrice: number;
+  yieldPortions: number;
+  costPerPortion: number;
 }
 
 export interface TechnicalSheet {
