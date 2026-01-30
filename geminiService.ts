@@ -4,7 +4,7 @@ import { TechnicalSheet } from "./types";
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
   // Inicialización dinámica para capturar la API_KEY más reciente del entorno
-  const apiKey = process.env.API_KEY;
+  const apiKey = apiKey: import.meta.env.VITE_API_KEY;
   if (!apiKey) {
     throw new Error("MISSING_API_KEY");
   }
