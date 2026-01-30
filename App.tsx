@@ -75,10 +75,16 @@ const App: React.FC = () => {
     setError(null);
     try {
       const data = await generateTechnicalSheet(dishName);
-      const imageUrl = await generateDishImage(data.dishName + " high-end restaurant food photography");
+      const imageUrl = await generateDishImage(data.dishName);
       setSheet({ ...data, imageUrl });
-    } catch (err) {
-      setError("Error en la conexión. Intente con otro plato o verifique su conexión.");
+    } catch (err: any) {
+      if (err.message?.includes("CONFIG_ERROR")) {
+        setError("Error de configuración: La API Key no está configurada en el servidor.");
+      } else if (err.message?.includes("401") || err.message?.includes("API key not valid")) {
+        setError("Error de autenticación: La API Key proporcionada no es válida.");
+      } else {
+        setError("Error al procesar la solicitud. Por favor, verifica tu conexión o intenta con otro plato.");
+      }
       console.error(err);
     } finally {
       setLoading(false);
@@ -99,11 +105,9 @@ const App: React.FC = () => {
           scale: 2, 
           useCORS: true,
           letterRendering: true,
-          windowWidth: 1200 
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
       };
-
       // @ts-ignore
       await html2pdf().from(element).set(opt).save();
     } catch (err) {
@@ -118,17 +122,15 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900">
       <header className="bg-slate-900 text-white py-4 px-4 no-print shadow-2xl sticky top-0 z-50 border-b border-slate-800">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 w-full md:w-auto justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-amber-500 p-2 rounded-xl shadow-lg shadow-amber-500/20">
-                <ChefHat className="w-6 h-6 text-slate-900" />
-              </div>
-              <div className="flex flex-col">
-                <h1 className="text-xl lg:text-2xl font-black leading-none flex items-center gap-2">
-                  CHEFMASTER <span className="text-[8px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded font-black italic">PRO</span>
-                </h1>
-                <p className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 tracking-tighter">Gestión de Costos & Fichas Técnicas</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-500 p-2 rounded-xl shadow-lg shadow-amber-500/20">
+              <ChefHat className="w-6 h-6 text-slate-900" />
+            </div>
+            <div className="flex flex-col">
+              <h1 className="text-xl lg:text-2xl font-black leading-none">
+                CHEFMASTER <span className="text-[8px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded font-black italic">PRO</span>
+              </h1>
+              <p className="text-[9px] uppercase font-bold text-slate-400 mt-0.5 tracking-tighter">Gestión de Costos & Fichas Técnicas</p>
             </div>
           </div>
           
@@ -136,12 +138,12 @@ const App: React.FC = () => {
             <form onSubmit={handleGenerate} className="relative flex-1 group w-full">
               <input
                 type="text"
-                placeholder="Nombre del plato (ej. Posta Cartagenera)"
+                placeholder="Nombre del plato..."
                 className="w-full bg-slate-800 border-2 border-slate-700 rounded-full py-2.5 px-6 pl-11 focus:outline-none focus:border-amber-500 transition-all text-sm text-white placeholder-slate-500"
                 value={dishName}
                 onChange={(e) => setDishName(e.target.value)}
               />
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-amber-500" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <button
                 type="submit"
                 disabled={loading}
@@ -154,179 +156,120 @@ const App: React.FC = () => {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto mt-6 px-4 w-full flex-1 mb-20 overflow-x-hidden">
+      <main className="max-w-6xl mx-auto mt-6 px-4 w-full flex-1 mb-20">
         {loading && (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-            <div className="relative mb-8">
-              <Zap className="w-20 h-20 text-amber-500 animate-pulse" />
-              <Loader2 className="w-24 h-24 text-amber-200 animate-spin absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30" />
-            </div>
-            <p className="text-2xl font-black text-slate-800 italic text-center">Analizando costos en COP...</p>
-            <p className="text-sm font-medium mt-3 text-slate-500">Generando imagen y procesos...</p>
+            <Zap className="w-20 h-20 text-amber-500 animate-pulse mb-8" />
+            <p className="text-2xl font-black text-slate-800 italic">Generando ficha técnica...</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl mb-8 flex items-center gap-5 shadow-lg animate-in slide-in-from-left-4">
+          <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl mb-8 flex items-center gap-5 shadow-lg animate-in fade-in">
             <AlertTriangle className="text-red-500 w-8 h-8 shrink-0" />
-            <p className="text-red-700 font-bold">{error}</p>
+            <div>
+              <p className="text-red-700 font-bold">Error detectado</p>
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
           </div>
         )}
 
         {!sheet && !loading && !error && (
           <div className="text-center py-24 bg-white rounded-[3rem] shadow-sm border border-slate-200 px-6">
-            <div className="bg-slate-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner border border-slate-100">
-              <UtensilsCrossed className="w-10 h-10 text-slate-200" />
-            </div>
-            <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase tracking-tight">Panel de Control de Costos</h2>
-            <p className="text-slate-500 max-w-sm mx-auto font-medium text-lg leading-relaxed">Cree fichas técnicas profesionales con precisión financiera y visual para su restaurante.</p>
+            <UtensilsCrossed className="w-10 h-10 text-slate-200 mx-auto mb-8" />
+            <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase">Panel de Control de Costos</h2>
+            <p className="text-slate-500 max-w-sm mx-auto font-medium">Cree fichas técnicas profesionales con precisión financiera para su restaurante.</p>
           </div>
         )}
 
         {sheet && !loading && (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4">
-               <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 bg-white px-5 py-2.5 rounded-full border border-slate-200 uppercase shadow-sm">
-                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                 ID: FT-{Math.floor(Math.random()*9000)+1000} | REV: 2024
-               </div>
+          <div className="animate-in fade-in duration-500">
+            <div className="flex justify-end mb-8 no-print">
                <button 
                   onClick={handleExportPDF}
                   disabled={exporting}
-                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 font-black text-xs disabled:opacity-70 active:scale-95"
+                  className="flex items-center gap-2 bg-slate-900 text-white px-8 py-3 rounded-full hover:bg-slate-800 transition-all font-black text-xs disabled:opacity-70"
                 >
-                  {exporting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin text-amber-500" /> Generando...</>
-                  ) : (
-                    <><Download className="w-4 h-4 text-amber-500" /> Descargar PDF</>
-                  )}
+                  {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                  {exporting ? "Generando..." : "Descargar PDF"}
                 </button>
             </div>
 
             <div className="bg-white shadow-2xl rounded-[2.5rem] overflow-hidden border border-slate-200" id="printable-area">
-              <div className="bg-slate-900 p-8 md:p-14 text-white flex flex-col lg:flex-row justify-between gap-12 border-b-8 border-amber-500">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-6">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                    <span className="text-amber-500 font-black text-[10px] uppercase tracking-[0.5em]">Documento Técnico Oficial</span>
-                  </div>
-                  <h2 className="text-4xl md:text-7xl font-black uppercase mb-6 leading-tight tracking-tighter">{sheet.dishName}</h2>
-                  <div className="flex flex-wrap items-center gap-6 lg:gap-10 text-slate-400 font-black text-xs uppercase tracking-widest">
-                    <span className="flex items-center gap-3 border-r border-slate-700 pr-10 py-1"><UtensilsCrossed className="w-5 h-5 text-amber-500" /> {sheet.category}</span>
-                    <span className="flex items-center gap-3 py-1"><Clock className="w-5 h-5 text-amber-500" /> Preparación: {sheet.prepTime}</span>
-                  </div>
-                  <p className="mt-10 text-slate-300 italic text-xl md:text-2xl border-l-8 border-amber-500/30 pl-8 leading-relaxed max-w-4xl py-2">
-                    "{sheet.description}"
-                  </p>
-                </div>
-
-                <div className="flex flex-col md:flex-row lg:flex-col items-center lg:items-end gap-10 shrink-0">
-                  <div className="bg-white/10 backdrop-blur-md p-8 rounded-[2.5rem] text-center border border-white/10 w-full sm:min-w-[300px] shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-3xl -mr-10 -mt-10" />
-                    <p className="text-[10px] lg:text-xs uppercase font-black text-amber-500 mb-3 tracking-widest">Precio Sugerido</p>
-                    <p className="text-5xl md:text-7xl font-black text-white tracking-tighter">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
-                    <div className="h-0.5 bg-amber-500/30 w-12 mx-auto my-4 rounded-full" />
-                    <p className="text-[10px] lg:text-xs uppercase font-bold text-slate-500 tracking-[0.2em]">COP | Final Cliente</p>
-                  </div>
-                  {sheet.imageUrl && (
-                    <div className="relative group">
-                      <img 
-                        src={sheet.imageUrl} 
-                        alt={sheet.dishName} 
-                        className="w-56 h-56 md:w-72 md:h-72 object-cover rounded-[3rem] border-8 border-white shadow-2xl transition-transform duration-500 group-hover:scale-105" 
-                      />
-                      <div className="absolute -bottom-4 -right-4 bg-amber-500 p-4 rounded-2xl shadow-xl border-4 border-white">
-                        <ImageIcon className="w-6 h-6 text-slate-900" />
-                      </div>
+              <div className="bg-slate-900 p-8 md:p-14 text-white border-b-8 border-amber-500">
+                <div className="flex flex-col lg:flex-row justify-between gap-12">
+                  <div className="flex-1">
+                    <h2 className="text-4xl md:text-7xl font-black uppercase mb-6 leading-tight">{sheet.dishName}</h2>
+                    <div className="flex items-center gap-6 text-slate-400 font-black text-xs uppercase tracking-widest">
+                      <span className="flex items-center gap-2"><UtensilsCrossed className="w-4 h-4 text-amber-500" /> {sheet.category}</span>
+                      <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-amber-500" /> {sheet.prepTime}</span>
                     </div>
-                  )}
+                    <p className="mt-10 text-slate-300 italic text-xl border-l-8 border-amber-500/30 pl-8">"{sheet.description}"</p>
+                  </div>
+                  <div className="flex flex-col items-center lg:items-end gap-10">
+                    <div className="bg-white/10 p-8 rounded-[2.5rem] text-center border border-white/10 w-full sm:min-w-[300px]">
+                      <p className="text-[10px] uppercase font-black text-amber-500 mb-3 tracking-widest">Precio Sugerido</p>
+                      <p className="text-5xl font-black text-white">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-500 mt-2">COP | Multiplicador 3.3x</p>
+                    </div>
+                    {sheet.imageUrl && (
+                      <img src={sheet.imageUrl} className="w-56 h-56 object-cover rounded-[3rem] border-8 border-white shadow-2xl" alt={sheet.dishName} />
+                    )}
+                  </div>
                 </div>
               </div>
 
               <div className="p-8 md:p-14 space-y-16">
                 <div>
-                  <div className="flex items-center justify-between mb-8 border-b-4 border-slate-100 pb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-emerald-100 p-3 rounded-2xl">
-                        <DollarSign className="w-8 h-8 text-emerald-600" />
-                      </div>
-                      <h3 className="text-3xl font-black uppercase tracking-tighter text-slate-900">Estructura de Costos de Insumos</h3>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase italic">
-                      <ChevronRight className="w-4 h-4" /> Deslice para ver más
-                    </div>
-                  </div>
-                  
-                  <div className="overflow-x-auto rounded-[2.5rem] border-2 border-slate-100 shadow-sm">
-                    <table className="w-full text-left border-collapse min-w-[750px]">
-                      <thead className="bg-slate-50 text-[10px] lg:text-xs font-black uppercase tracking-[0.2em] text-slate-400 border-b-2 border-slate-100">
+                  <h3 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                    <DollarSign className="w-6 h-6 text-emerald-600" /> Estructura de Costos
+                  </h3>
+                  <div className="overflow-x-auto rounded-3xl border border-slate-100 shadow-sm">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50 text-[10px] font-black uppercase text-slate-400">
                         <tr>
                           <th className="px-8 py-6">Ingrediente</th>
                           <th className="px-8 py-6 text-right">Cantidad</th>
                           <th className="px-8 py-6 text-right">Costo (u)</th>
-                          <th className="px-8 py-6 text-right bg-slate-100/40">Subtotal</th>
+                          <th className="px-8 py-6 text-right">Subtotal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
                         {sheet.ingredients.map((ing, i) => (
-                          <tr key={i} className="hover:bg-slate-50 transition-colors group">
-                            <td className="px-8 py-6 font-bold text-slate-800 text-lg">
+                          <tr key={i} className="hover:bg-slate-50 transition-colors">
+                            <td className="px-8 py-6">
                               <div className="flex items-center gap-4">
-                                <div className={`p-2 rounded-xl ${getCategoryBg(ing.category)} group-hover:scale-110 transition-transform`}>
+                                <div className={`p-2 rounded-lg ${getCategoryBg(ing.category)}`}>
                                   <IngredientIcon category={ing.category} />
                                 </div>
-                                <div className="flex flex-col">
-                                  <span>{ing.name}</span>
-                                  <span className="text-[10px] uppercase text-slate-400 font-black tracking-widest">{ing.category}</span>
-                                </div>
+                                <span className="font-bold text-slate-800">{ing.name}</span>
                               </div>
                             </td>
-                            <td className="px-8 py-6 text-right text-slate-600 font-bold text-base">{ing.amount} {ing.unit}</td>
-                            <td className="px-8 py-6 text-right text-slate-500 tabular-nums font-medium">${ing.unitCost.toLocaleString('es-CO')}</td>
-                            <td className="px-8 py-6 text-right font-black text-slate-900 bg-slate-50/20 tabular-nums text-lg group-hover:bg-slate-100/50 transition-colors">${ing.subtotal.toLocaleString('es-CO')}</td>
+                            <td className="px-8 py-6 text-right text-slate-600">{ing.amount} {ing.unit}</td>
+                            <td className="px-8 py-6 text-right text-slate-500">${ing.unitCost.toLocaleString('es-CO')}</td>
+                            <td className="px-8 py-6 text-right font-black text-slate-900">${ing.subtotal.toLocaleString('es-CO')}</td>
                           </tr>
                         ))}
                       </tbody>
                       <tfoot className="bg-slate-900 text-white font-black">
                         <tr>
-                          <td colSpan={3} className="px-8 py-8 text-right uppercase text-xs opacity-50 tracking-[0.3em] font-black">Costo Total Unitario</td>
-                          <td className="px-8 py-8 text-right text-3xl md:text-4xl text-amber-500 tracking-tighter">${sheet.financials.totalCost.toLocaleString('es-CO')}</td>
+                          <td colSpan={3} className="px-8 py-8 text-right uppercase text-xs opacity-50">Costo Total Unitario</td>
+                          <td className="px-8 py-8 text-right text-3xl text-amber-500">${sheet.financials.totalCost.toLocaleString('es-CO')}</td>
                         </tr>
                       </tfoot>
                     </table>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
-                    <div className="bg-emerald-50 p-8 rounded-[2rem] border-2 border-emerald-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-emerald-600 mb-2 tracking-widest">Food Cost Target</p>
-                      <p className="text-3xl font-black text-emerald-800">30.3%</p>
-                    </div>
-                    <div className="bg-blue-50 p-8 rounded-[2rem] border-2 border-blue-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-blue-600 mb-2 tracking-widest">Utilidad Bruta</p>
-                      <p className="text-3xl font-black text-blue-800">${(sheet.financials.suggestedPrice - sheet.financials.totalCost).toLocaleString('es-CO')}</p>
-                    </div>
-                    <div className="bg-amber-50 p-8 rounded-[2rem] border-2 border-amber-100 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-16 h-16 bg-amber-500/5 rotate-45 -mr-8 -mt-8" />
-                      <p className="text-[10px] uppercase font-black text-amber-600 mb-2 tracking-widest">Multiplicador (3.3x)</p>
-                      <p className="text-3xl font-black text-amber-800">3.3x</p>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                  <section className="bg-slate-50 p-10 rounded-[3rem] border border-slate-100 shadow-inner">
-                    <div className="flex items-center gap-4 mb-10">
-                      <div className="bg-amber-500 text-white p-3 rounded-2xl">
-                        <Clock className="w-6 h-6" />
-                      </div>
-                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Mise en Place</h3>
-                    </div>
-                    <ul className="space-y-6">
+                  <section className="bg-slate-50 p-10 rounded-[3rem]">
+                    <h3 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                      <Clock className="w-6 h-6 text-amber-500" /> Mise en Place
+                    </h3>
+                    <ul className="space-y-4">
                       {sheet.miseEnPlace.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-5 font-bold text-slate-700 text-lg leading-snug">
-                          <div className="w-2.5 h-2.5 bg-amber-500 rounded-full mt-2.5 shrink-0 shadow-sm" />
+                        <li key={idx} className="flex items-start gap-4 font-bold text-slate-700">
+                          <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 shrink-0" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -334,120 +277,35 @@ const App: React.FC = () => {
                   </section>
                   
                   <section>
-                    <div className="flex items-center gap-4 mb-10">
-                      <div className="bg-indigo-600 text-white p-3 rounded-2xl">
-                        <FileText className="w-6 h-6" />
-                      </div>
-                      <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">Proceso de Elaboración</h3>
-                    </div>
-                    <div className="space-y-12">
+                    <h3 className="text-2xl font-black uppercase mb-8 flex items-center gap-3">
+                      <FileText className="w-6 h-6 text-indigo-600" /> Preparación
+                    </h3>
+                    <div className="space-y-8">
                       {sheet.preparationSteps.map((s) => (
-                        <div key={s.step} className="relative pl-16 border-l-4 border-slate-100 last:border-transparent pb-4">
-                          <span className="absolute -left-[30px] top-0 bg-slate-900 text-white font-black w-14 h-14 flex items-center justify-center rounded-[1.2rem] text-lg shadow-2xl shadow-slate-900/20 border-4 border-white">
+                        <div key={s.step} className="relative pl-12 border-l-2 border-slate-100 pb-4">
+                          <span className="absolute -left-[18px] top-0 bg-slate-900 text-white font-black w-8 h-8 flex items-center justify-center rounded-lg text-sm">
                             {s.step}
                           </span>
-                          <p className="text-xl md:text-2xl font-black text-slate-900 mb-4 leading-tight">{s.description}</p>
-                          <div className="flex flex-wrap gap-4">
-                            {s.temp && (
-                              <span className="text-[10px] font-black uppercase bg-slate-100 px-5 py-2 rounded-full text-slate-500 flex items-center gap-2 border border-slate-200">
-                                <Thermometer className="w-4 h-4 text-red-500" /> {s.temp}
-                              </span>
-                            )}
-                            {s.time && (
-                              <span className="text-[10px] font-black uppercase bg-slate-100 px-5 py-2 rounded-full text-slate-500 flex items-center gap-2 border border-slate-200">
-                                <Clock className="w-4 h-4 text-indigo-500" /> {s.time}
-                              </span>
-                            )}
+                          <p className="font-bold text-slate-900 mb-2">{s.description}</p>
+                          <div className="flex gap-4">
+                            {s.temp && <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1 rounded-full text-slate-500">{s.temp}</span>}
+                            {s.time && <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1 rounded-full text-slate-500">{s.time}</span>}
                           </div>
                         </div>
                       ))}
                     </div>
                   </section>
                 </div>
-
-                <div className="bg-slate-900 p-10 md:p-16 rounded-[4rem] text-white grid grid-cols-1 lg:grid-cols-3 gap-16 relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 blur-[120px] rounded-full -mr-32 -mt-32" />
-                  <div className="lg:col-span-2 relative z-10">
-                    <div className="flex items-center gap-4 mb-8">
-                      <div className="w-2 h-10 bg-amber-500 rounded-full" />
-                      <h3 className="text-4xl font-black text-white uppercase tracking-tighter">Presentación y Estética</h3>
-                    </div>
-                    <p className="text-2xl text-slate-300 italic mb-14 leading-relaxed font-medium">"{sheet.plating}"</p>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-12 border-t border-white/10">
-                      <div>
-                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">Variantes y Recomendaciones</h4>
-                        <p className="text-base text-slate-400 font-medium leading-relaxed">{sheet.variants}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-5 tracking-[0.3em]">Mapa de Alérgenos</h4>
-                        <div className="flex flex-wrap gap-3">
-                          {sheet.allergens.map((alg, i) => (
-                            <span key={i} className="text-[10px] font-black bg-red-500/20 text-red-400 px-5 py-2 rounded-full border border-red-500/30 uppercase tracking-tighter">{alg}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/5 backdrop-blur-2xl p-10 rounded-[3rem] border border-white/10 shadow-3xl relative z-10">
-                    <h3 className="text-2xl font-black text-emerald-400 uppercase mb-8 tracking-tighter flex items-center gap-3">
-                      <CheckCircle2 className="w-7 h-7" /> Control de Calidad (QC)
-                    </h3>
-                    <ul className="space-y-6 mb-12">
-                      {sheet.qcChecklist.map((q, i) => (
-                        <li key={i} className="flex items-start gap-4 text-base text-slate-300 font-medium">
-                          <CheckCircle2 className="w-5 h-5 text-emerald-500 mt-1 shrink-0" /> {q}
-                        </li>
-                      ))}
-                    </ul>
-                    <div className="pt-10 border-t border-white/10">
-                      <h4 className="text-[10px] uppercase font-black text-slate-500 mb-6 tracking-[0.2em]">Vida Útil</h4>
-                      <div className="space-y-5">
-                        <div className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5">
-                          <span className="text-slate-400 uppercase font-black text-[10px]">Refrigeración</span>
-                          <span className="font-black text-white">{sheet.conservation.refrigeration}</span>
-                        </div>
-                        <div className="flex justify-between items-center bg-white/5 p-5 rounded-2xl border border-white/5">
-                          <span className="text-slate-400 uppercase font-black text-[10px]">Congelación</span>
-                          <span className="font-black text-white">{sheet.conservation.freezing}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="hidden sm:grid grid-cols-2 gap-40 mt-40 pt-20 border-t-4 border-slate-100 no-print">
-                   <div className="text-center">
-                     <div className="h-1 bg-slate-300 mb-8 mx-auto w-72 rounded-full" />
-                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">Firma Chef Responsable</p>
-                     <p className="text-sm font-black text-slate-900 uppercase tracking-widest">CHEFMASTER AI CERTIFIED</p>
-                   </div>
-                   <div className="text-center">
-                     <div className="h-1 bg-slate-300 mb-8 mx-auto w-72 rounded-full" />
-                     <p className="text-[10px] uppercase font-black text-slate-400 tracking-[0.4em] mb-2">Firma Gerencia / Costos</p>
-                     <p className="text-sm font-black text-slate-900 uppercase tracking-widest">OPERATIONS MANAGEMENT</p>
-                   </div>
-                </div>
               </div>
             </div>
-            
-            <p className="mt-8 text-center text-[10px] text-slate-400 no-print max-w-2xl mx-auto px-6 font-medium">
-              Este documento es una estimación generada por IA profesional. Los costos deben ser validados por el departamento de compras y finanzas del establecimiento.
-            </p>
           </div>
         )}
       </main>
 
-      <footer className="py-16 text-center no-print">
-        <div className="inline-flex items-center gap-4 bg-white px-10 py-4 rounded-full border border-slate-200 shadow-2xl shadow-slate-200/50 group hover:border-amber-500 transition-colors">
-          <div className="bg-slate-100 p-2 rounded-full group-hover:bg-amber-100 transition-colors">
-            <ChefHat className="w-5 h-5 text-amber-500" />
-          </div>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] leading-none">
-            © {new Date().getFullYear()} CHEFMASTER | Precisión Gastronómica
-          </p>
-        </div>
+      <footer className="py-12 text-center no-print">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          © {new Date().getFullYear()} CHEFMASTER | PRECISIÓN GASTRONÓMICA
+        </p>
       </footer>
     </div>
   );
