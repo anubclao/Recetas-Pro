@@ -4,7 +4,7 @@ import { generateTechnicalSheet, generateDishImage } from './geminiService';
 import { TechnicalSheet, Language } from './types';
 import { 
   ChefHat, 
-  Printer, 
+  Download, 
   Search, 
   DollarSign, 
   Clock, 
@@ -15,81 +15,92 @@ import {
   Thermometer,
   Zap,
   Globe,
-  ImageIcon
+  ImageIcon,
+  Loader2
 } from 'lucide-react';
 
 const translations = {
   es: {
     title: "CHEFMASTER",
-    subtitle: "Gestión de Costos & Fichas Técnicas Gastronómicas",
+    subtitle: "Gestión de Costos & Fichas Técnicas",
     placeholder: "Nombre del plato (ej. Posta Cartagenera)",
-    generate: "Generar",
-    generating: "Generando...",
-    loadingText: "Calculando costos de mercado en Colombia...",
-    optimizing: "Optimizando rentabilidad y mise en place...",
-    welcome: "Bienvenido, Chef",
-    welcomeDesc: "Ingrese el nombre de un plato para generar una ficha técnica profesional con costeo detallado y procesos de cocina industrial.",
-    export: "Exportar a PDF",
+    generate: "Generar Ficha",
+    generating: "Cocinando...",
+    loadingText: "Analizando costos en COP...",
+    optimizing: "Generando imagen y procesos...",
+    welcome: "Panel de Control de Costos",
+    welcomeDesc: "Cree fichas técnicas profesionales con precisión financiera y visual para su restaurante.",
+    export: "Descargar PDF",
     suggestedPrice: "Precio Sugerido",
-    costingTitle: "Costeo Detallado de Insumos",
+    costingTitle: "Estructura de Costos de Insumos",
     ingredient: "Ingrediente",
-    amount: "Gramaje/Cantidad",
-    unitCost: "Costo Unitario (g/ml)",
+    amount: "Cantidad",
+    unitCost: "Costo (g/ml)",
     subtotal: "Subtotal",
-    totalCost: "Costo Total del Plato",
-    foodCost: "Food Cost %",
-    margin: "Margen de Contribución",
-    markup: "Multiplicador (Markup)",
+    totalCost: "Costo Total Unitario",
+    foodCost: "Food Cost Target",
+    margin: "Utilidad Bruta",
+    markup: "Multiplicador (3.3x)",
     miseEnPlace: "Mise en Place",
-    steps: "Preparación Paso a Paso",
-    plating: "Montaje y Estética",
-    variants: "Variantes & Tips",
-    allergens: "Alérgenos (SISO)",
-    qc: "QC Checklist",
-    conservation: "Conservación",
+    steps: "Proceso de Elaboración",
+    plating: "Presentación y Estética",
+    variants: "Variantes y Recomendaciones",
+    allergens: "Mapa de Alérgenos",
+    qc: "Control de Calidad (QC)",
+    conservation: "Vida Útil",
     refrig: "Refrigeración",
     freeze: "Congelación",
-    imagePrompt: "Prompt Publicitario Sugerido (Midjourney/DALL-E)",
-    error: "Ocurrió un error al generar la ficha técnica. Por favor intenta de nuevo.",
-    author: "Chef Ejecutivo / Autor",
-    approval: "Aprobación Costos & Finanzas",
-    imageLabel: "Imagen Generada por IA"
+    imagePrompt: "Concepto Visual de IA",
+    error: "Error en la conexión. Intente con otro plato o verifique su conexión.",
+    author: "Firma Chef Responsable",
+    approval: "Firma Gerencia / Costos",
+    imageLabel: "Visualización Sugerida",
+    docHeader: "Documento Técnico Oficial",
+    rev: "REV:",
+    finalPriceLabel: "Final Cliente",
+    footerText: "Precisión Gastronómica",
+    prepPrefix: "Prep:"
   },
   en: {
     title: "CHEFMASTER",
-    subtitle: "Cost Management & Gastronomic Technical Sheets",
-    placeholder: "Dish name (e.g. Colombian Braised Beef)",
-    generate: "Generate",
-    generating: "Generating...",
-    loadingText: "Calculating market costs in Colombia...",
-    optimizing: "Optimizing profitability and mise en place...",
-    welcome: "Welcome, Chef",
-    welcomeDesc: "Enter the name of a dish to generate a professional technical sheet with detailed costing and industrial kitchen processes.",
-    export: "Export to PDF",
+    subtitle: "Cost Management & Technical Sheets",
+    placeholder: "Dish name (e.g. Braised Short Ribs)",
+    generate: "Generate Sheet",
+    generating: "Cooking...",
+    loadingText: "Analyzing COP costs...",
+    optimizing: "Generating image and workflows...",
+    welcome: "Cost Control Dashboard",
+    welcomeDesc: "Create professional technical sheets with financial and visual precision for your restaurant.",
+    export: "Download PDF",
     suggestedPrice: "Suggested Price",
-    costingTitle: "Detailed Resource Costing",
+    costingTitle: "Resource Costing Structure",
     ingredient: "Ingredient",
-    amount: "Weight/Quantity",
-    unitCost: "Unit Cost (g/ml)",
+    amount: "Quantity",
+    unitCost: "Cost (g/ml)",
     subtotal: "Subtotal",
-    totalCost: "Total Plate Cost",
-    foodCost: "Food Cost %",
-    margin: "Contribution Margin",
-    markup: "Multiplier (Markup)",
+    totalCost: "Total Unit Cost",
+    foodCost: "Food Cost Target",
+    margin: "Gross Utility",
+    markup: "Multiplier (3.3x)",
     miseEnPlace: "Mise en Place",
-    steps: "Step-by-Step Preparation",
+    steps: "Preparation Workflow",
     plating: "Plating and Aesthetics",
-    variants: "Variants & Tips",
-    allergens: "Allergens (SISO)",
-    qc: "QC Checklist",
-    conservation: "Conservation",
+    variants: "Variants & Chef Tips",
+    allergens: "Allergen Map",
+    qc: "Quality Control (QC)",
+    conservation: "Shelf Life",
     refrig: "Refrigeration",
     freeze: "Freezing",
-    imagePrompt: "Suggested Advertising Prompt (Midjourney/DALL-E)",
-    error: "An error occurred while generating the sheet. Please try again.",
-    author: "Executive Chef / Author",
-    approval: "Cost & Finance Approval",
-    imageLabel: "AI Generated Image"
+    imagePrompt: "AI Visual Concept",
+    error: "Connection error. Please check your connection or try another dish.",
+    author: "Executive Chef Signature",
+    approval: "Management / Cost Approval",
+    imageLabel: "Suggested Visualization",
+    docHeader: "Official Technical Document",
+    rev: "REV:",
+    finalPriceLabel: "Final Customer",
+    footerText: "Gastronomic Precision",
+    prepPrefix: "Prep:"
   }
 };
 
@@ -109,12 +120,8 @@ const App: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Generate text data
       const data = await generateTechnicalSheet(dishName, lang);
-      
-      // 2. Generate image based on the dish name and description
-      const imageUrl = await generateDishImage(data.dishName + " " + data.description);
-      
+      const imageUrl = await generateDishImage(data.dishName + " gourmet restaurant plating");
       setSheet({ ...data, imageUrl });
     } catch (err) {
       setError(t.error);
@@ -124,31 +131,48 @@ const App: React.FC = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handleExportPDF = () => {
+    const element = document.getElementById('printable-area');
+    if (!element) return;
+
+    const opt = {
+      margin: 10,
+      filename: `Ficha_Tecnica_${sheet?.dishName.replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Use html2pdf for a direct download
+    // @ts-ignore
+    html2pdf().from(element).set(opt).save();
   };
 
   return (
-    <div className="min-h-screen pb-20">
-      {/* Header Section */}
-      <header className="bg-slate-900 text-white py-8 px-4 no-print shadow-xl">
-        <div className="max-w-6xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-amber-500 p-3 rounded-lg shadow-inner">
-              <ChefHat className="w-8 h-8 text-slate-900" />
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      {/* Fixed Header */}
+      <header className="bg-slate-900 text-white py-4 px-4 no-print shadow-2xl sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 w-full md:w-auto justify-between">
+            <div className="flex items-center gap-2">
+              <ChefHat className="w-6 h-6 text-amber-500" />
+              <div>
+                <h1 className="text-xl font-black leading-none">{t.title} <span className="text-[8px] bg-amber-500 text-slate-900 px-1 py-0.5 rounded italic">PRO</span></h1>
+                <p className="text-[8px] uppercase font-bold text-slate-400 mt-0.5">{t.subtitle}</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">{t.title} <span className="text-amber-500 italic">PRO</span></h1>
-              <p className="text-slate-400 text-sm font-medium">{t.subtitle}</p>
-            </div>
+            <button 
+              onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setSheet(null); }}
+              className="md:hidden bg-slate-800 p-2 rounded-full"
+            ><Globe className="w-4 h-4 text-amber-500" /></button>
           </div>
           
-          <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:max-w-2xl">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:max-w-xl">
             <button 
-              onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
-              className="flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-full hover:bg-slate-700 transition-all text-xs font-bold uppercase tracking-widest text-slate-300"
+              onClick={() => { setLang(lang === 'es' ? 'en' : 'es'); setSheet(null); }}
+              className="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-300"
             >
-              <Globe className="w-4 h-4 text-amber-500" />
+              <Globe className="w-3 h-3 text-amber-500" />
               {lang === 'es' ? 'English' : 'Español'}
             </button>
 
@@ -156,261 +180,233 @@ const App: React.FC = () => {
               <input
                 type="text"
                 placeholder={t.placeholder}
-                className="w-full bg-slate-800 border-2 border-slate-700 rounded-full py-3 px-6 pl-12 focus:outline-none focus:border-amber-500 transition-all text-white placeholder-slate-500"
+                className="w-full bg-slate-800 border-2 border-slate-700 rounded-full py-2 px-6 pl-10 focus:outline-none focus:border-amber-500 transition-all text-sm text-white"
                 value={dishName}
                 onChange={(e) => setDishName(e.target.value)}
               />
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 group-focus-within:text-amber-500" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <button
                 type="submit"
                 disabled={loading}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-6 py-1.5 rounded-full transition-colors disabled:opacity-50"
+                className="absolute right-1 top-1/2 -translate-y-1/2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-black text-[10px] uppercase px-4 py-1.5 rounded-full shadow-lg disabled:opacity-50"
               >
-                {loading ? t.generating : t.generate}
+                {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : t.generate}
               </button>
             </form>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto mt-10 px-4">
+      {/* Main Container */}
+      <main className="max-w-6xl mx-auto mt-6 px-4 w-full flex-1 mb-20 overflow-x-hidden">
         {loading && (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-400 animate-pulse">
-            <Zap className="w-16 h-16 mb-4 text-amber-500 animate-bounce" />
-            <p className="text-xl font-medium italic">{t.loadingText}</p>
-            <p className="text-sm">{t.optimizing}</p>
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <Zap className="w-16 h-16 text-amber-500 animate-pulse mb-6" />
+            <p className="text-xl font-black text-slate-800 italic">{t.loadingText}</p>
+            <p className="text-sm font-medium mt-2">{t.optimizing}</p>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded mb-6 flex items-center gap-3">
-            <AlertTriangle className="text-red-500" />
-            <p className="text-red-700">{error}</p>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl mb-6 flex items-center gap-4 shadow-sm animate-in slide-in-from-left-4">
+            <AlertTriangle className="text-red-500 w-6 h-6 shrink-0" />
+            <p className="text-red-700 font-bold text-sm">{error}</p>
           </div>
         )}
 
         {!sheet && !loading && !error && (
-          <div className="text-center py-20 bg-white rounded-2xl shadow-sm border border-slate-200">
-            <UtensilsCrossed className="w-16 h-16 mx-auto text-slate-300 mb-4" />
-            <h2 className="text-2xl text-slate-800 mb-2">{t.welcome}</h2>
-            <p className="text-slate-500 max-w-md mx-auto">{t.welcomeDesc}</p>
+          <div className="text-center py-20 bg-white rounded-[2.5rem] shadow-sm border border-slate-200">
+            <UtensilsCrossed className="w-16 h-16 text-slate-200 mx-auto mb-6" />
+            <h2 className="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight">{t.welcome}</h2>
+            <p className="text-slate-500 max-w-sm mx-auto font-medium px-6">{t.welcomeDesc}</p>
           </div>
         )}
 
         {sheet && !loading && (
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden border border-slate-200 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Action Bar */}
-            <div className="bg-slate-50 border-b border-slate-200 px-8 py-4 flex justify-between items-center no-print">
-              <span className="text-slate-500 font-mono text-xs tracking-widest uppercase">ID: FT-{Math.floor(Math.random()*10000)} | Rev: 01</span>
-              <button 
-                onClick={handlePrint}
-                className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-700 transition-colors"
-              >
-                <Printer className="w-4 h-4" />
-                {t.export}
-              </button>
+          <div className="animate-in fade-in zoom-in-95 duration-500">
+            {/* Header Actions */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6 no-print gap-4">
+               <div className="flex items-center gap-2 text-[10px] font-black text-slate-400 bg-white px-4 py-2 rounded-full border border-slate-200 uppercase">
+                 ID: FT-{Math.floor(Math.random()*9000)+1000} | {t.rev} 2024
+               </div>
+               <button 
+                  onClick={handleExportPDF}
+                  className="w-full md:w-auto flex items-center justify-center gap-2 bg-slate-900 text-white px-6 py-2.5 rounded-full hover:bg-slate-800 shadow-xl font-bold text-xs"
+                >
+                  <Download className="w-4 h-4 text-amber-500" />
+                  {t.export}
+                </button>
             </div>
 
-            <div className="p-8 md:p-12" id="printable-area">
+            {/* PRINTABLE CARD */}
+            <div className="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-200" id="printable-area">
               {/* Header */}
-              <div className="flex flex-col md:flex-row justify-between items-start border-b-4 border-slate-900 pb-8 mb-10 gap-8">
+              <div className="bg-slate-900 p-8 md:p-12 text-white flex flex-col xl:flex-row justify-between gap-10">
                 <div className="flex-1">
-                  <h2 className="text-4xl font-extrabold text-slate-900 uppercase mb-2 leading-tight">{sheet.dishName}</h2>
-                  <p className="text-slate-500 font-medium text-lg uppercase tracking-wide">{sheet.category} | {t.steps}: {sheet.prepTime}</p>
-                  <p className="mt-4 text-slate-700 italic border-l-4 border-amber-500 pl-4 py-1 text-lg leading-relaxed">"{sheet.description}"</p>
+                  <span className="text-amber-500 font-black text-[10px] uppercase tracking-[0.4em] mb-4 block">{t.docHeader}</span>
+                  <h2 className="text-4xl md:text-6xl font-black uppercase mb-4 leading-none">{sheet.dishName}</h2>
+                  <div className="flex flex-wrap items-center gap-6 text-slate-400 font-bold text-sm">
+                    <span className="flex items-center gap-2 border-r border-slate-700 pr-6"><UtensilsCrossed className="w-4 h-4 text-amber-500" /> {sheet.category}</span>
+                    <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-amber-500" /> {t.prepPrefix} {sheet.prepTime}</span>
+                  </div>
+                  <p className="mt-8 text-slate-300 italic text-xl border-l-4 border-amber-500/50 pl-6 leading-relaxed">"{sheet.description}"</p>
                 </div>
-                
-                <div className="flex flex-col items-center gap-4">
-                  <div className="bg-slate-900 text-white p-6 rounded-lg text-center min-w-[200px] shadow-lg">
-                    <p className="text-xs uppercase tracking-widest opacity-70 mb-1">{t.suggestedPrice}</p>
-                    <p className="text-4xl font-black text-amber-500">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
-                    <p className="text-[10px] opacity-50 mt-2 uppercase">COP - {lang === 'es' ? 'Redondeado' : 'Rounded'}</p>
+
+                <div className="flex flex-col md:flex-row xl:flex-col items-center xl:items-end gap-8 shrink-0">
+                  <div className="bg-white/10 p-6 rounded-[2rem] text-center border border-white/10 w-full sm:min-w-[240px] shadow-2xl">
+                    <p className="text-[10px] uppercase font-black text-amber-500 mb-2">{t.suggestedPrice}</p>
+                    <p className="text-5xl font-black text-white tracking-tight">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
+                    <p className="text-[10px] uppercase font-bold text-slate-500 mt-2 tracking-widest">COP | {t.finalPriceLabel}</p>
                   </div>
                   {sheet.imageUrl && (
-                    <div className="relative group">
-                      <img 
-                        src={sheet.imageUrl} 
-                        alt={sheet.dishName} 
-                        className="w-48 h-48 object-cover rounded-lg border-4 border-white shadow-xl rotate-2 group-hover:rotate-0 transition-all duration-300" 
-                      />
-                      <div className="absolute -bottom-2 -right-2 bg-amber-500 text-slate-900 p-1.5 rounded-full shadow-lg">
-                        <ImageIcon className="w-4 h-4" />
-                      </div>
-                    </div>
+                    <img 
+                      src={sheet.imageUrl} 
+                      alt={sheet.dishName} 
+                      className="w-48 h-48 md:w-64 md:h-64 object-cover rounded-[2rem] border-8 border-white shadow-2xl" 
+                    />
                   )}
                 </div>
               </div>
 
-              {/* Costing Grid */}
-              <div className="mb-12">
-                <div className="flex items-center gap-2 mb-4">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
-                  <h3 className="text-xl font-bold text-slate-800 uppercase tracking-tighter">{t.costingTitle}</h3>
-                </div>
-                <div className="overflow-x-auto rounded-lg border border-slate-200">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-slate-50 text-slate-600 uppercase text-xs font-bold">
-                      <tr>
-                        <th className="px-6 py-4">{t.ingredient}</th>
-                        <th className="px-6 py-4 text-right">{t.amount}</th>
-                        <th className="px-6 py-4 text-right">{t.unitCost}</th>
-                        <th className="px-6 py-4 text-right">{t.subtotal}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {sheet.ingredients.map((ing, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-3 font-medium text-slate-800">{ing.name}</td>
-                          <td className="px-6 py-3 text-right text-slate-600">{ing.amount} {ing.unit}</td>
-                          <td className="px-6 py-3 text-right text-slate-600">${ing.unitCost.toLocaleString('es-CO')}</td>
-                          <td className="px-6 py-3 text-right font-semibold text-slate-900">${ing.subtotal.toLocaleString('es-CO')}</td>
+              {/* Data Body */}
+              <div className="p-8 md:p-12 space-y-12">
+                {/* Costing */}
+                <div>
+                  <div className="flex items-center gap-3 mb-6 border-b-2 border-slate-100 pb-4">
+                    <DollarSign className="w-6 h-6 text-emerald-600" />
+                    <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900">{t.costingTitle}</h3>
+                  </div>
+                  <div className="overflow-x-auto rounded-[1.5rem] border border-slate-200">
+                    <table className="w-full text-left border-collapse min-w-[600px]">
+                      <thead className="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <tr>
+                          <th className="px-6 py-5">{t.ingredient}</th>
+                          <th className="px-6 py-5 text-right">{t.amount}</th>
+                          <th className="px-6 py-5 text-right">{t.unitCost}</th>
+                          <th className="px-6 py-5 text-right bg-slate-100/30">{t.subtotal}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="bg-slate-900 text-white font-bold">
-                      <tr>
-                        <td colSpan={3} className="px-6 py-4 text-right uppercase tracking-wider">{t.totalCost}</td>
-                        <td className="px-6 py-4 text-right text-xl text-amber-500">${sheet.financials.totalCost.toLocaleString('es-CO')}</td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                </div>
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
-                    <p className="text-xs uppercase text-emerald-600 font-bold mb-1">{t.foodCost}</p>
-                    <p className="text-2xl font-bold text-emerald-700">30.3%</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                    <p className="text-xs uppercase text-blue-600 font-bold mb-1">{t.margin}</p>
-                    <p className="text-2xl font-bold text-blue-700">${(sheet.financials.suggestedPrice - sheet.financials.totalCost).toLocaleString('es-CO')}</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 col-span-2 md:col-span-1">
-                    <p className="text-xs uppercase text-purple-600 font-bold mb-1">{t.markup}</p>
-                    <p className="text-2xl font-bold text-purple-700">3.3x</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Technical Procedures */}
-              <div className="grid md:grid-cols-2 gap-12 mb-12">
-                <section>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Clock className="w-5 h-5 text-amber-600" />
-                    <h3 className="text-xl font-bold text-slate-800 uppercase tracking-tighter border-b border-slate-200 pb-2 w-full">{t.miseEnPlace}</h3>
-                  </div>
-                  <ul className="space-y-3">
-                    {sheet.miseEnPlace.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-slate-700 leading-tight">
-                        <div className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-
-                <section>
-                  <div className="flex items-center gap-2 mb-4">
-                    <FileText className="w-5 h-5 text-indigo-600" />
-                    <h3 className="text-xl font-bold text-slate-800 uppercase tracking-tighter border-b border-slate-200 pb-2 w-full">{t.steps}</h3>
-                  </div>
-                  <div className="space-y-6">
-                    {sheet.preparationSteps.map((step) => (
-                      <div key={step.step} className="relative pl-10">
-                        <span className="absolute left-0 top-0 bg-slate-100 text-slate-500 font-bold w-7 h-7 flex items-center justify-center rounded-full text-sm">
-                          {step.step}
-                        </span>
-                        <p className="text-slate-800 font-medium mb-1">{step.description}</p>
-                        {(step.temp || step.time) && (
-                          <div className="flex gap-4 text-xs text-slate-500 uppercase font-semibold">
-                            {step.temp && <span className="flex items-center gap-1"><Thermometer className="w-3 h-3" /> {step.temp}</span>}
-                            {step.time && <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {step.time}</span>}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              </div>
-
-              {/* Plating and Quality Control */}
-              <div className="bg-slate-900 text-white rounded-xl p-8 grid md:grid-cols-3 gap-10">
-                <div className="md:col-span-2">
-                  <h3 className="text-xl font-bold text-amber-500 uppercase mb-4 flex items-center gap-2">
-                    <UtensilsCrossed className="w-5 h-5" /> {t.plating}
-                  </h3>
-                  <p className="text-slate-300 leading-relaxed text-lg italic">{sheet.plating}</p>
-                  
-                  <div className="mt-8 grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-xs uppercase text-slate-500 font-bold mb-2">{t.variants}</h4>
-                      <p className="text-sm text-slate-400 leading-relaxed">{sheet.variants}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-xs uppercase text-slate-500 font-bold mb-2">{t.allergens}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {sheet.allergens.map((alg, idx) => (
-                          <span key={idx} className="bg-red-900/40 text-red-200 text-[10px] px-2 py-0.5 rounded border border-red-800/50 uppercase font-bold tracking-tighter">
-                            {alg}
-                          </span>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {sheet.ingredients.map((ing, i) => (
+                          <tr key={i} className="hover:bg-slate-50">
+                            <td className="px-6 py-4 font-bold text-slate-800">{ing.name}</td>
+                            <td className="px-6 py-4 text-right text-slate-600 font-medium">{ing.amount} {ing.unit}</td>
+                            <td className="px-6 py-4 text-right text-slate-500 tabular-nums">${ing.unitCost.toLocaleString('es-CO')}</td>
+                            <td className="px-6 py-4 text-right font-black text-slate-900 bg-slate-50/20">${ing.subtotal.toLocaleString('es-CO')}</td>
+                          </tr>
                         ))}
+                      </tbody>
+                      <tfoot className="bg-slate-900 text-white font-black">
+                        <tr>
+                          <td colSpan={3} className="px-6 py-6 text-right uppercase text-[10px] opacity-60 tracking-[0.2em]">{t.totalCost}</td>
+                          <td className="px-6 py-6 text-right text-3xl text-amber-500">${sheet.financials.totalCost.toLocaleString('es-CO')}</td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
+                    <div className="bg-emerald-50 p-6 rounded-2xl border border-emerald-100">
+                      <p className="text-[10px] uppercase font-black text-emerald-600 mb-1">{t.foodCost}</p>
+                      <p className="text-2xl font-black text-emerald-800">30.3%</p>
+                    </div>
+                    <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                      <p className="text-[10px] uppercase font-black text-blue-600 mb-1">{t.margin}</p>
+                      <p className="text-2xl font-black text-blue-800">${(sheet.financials.suggestedPrice - sheet.financials.totalCost).toLocaleString('es-CO')}</p>
+                    </div>
+                    <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100">
+                      <p className="text-[10px] uppercase font-black text-amber-600 mb-1">{t.markup}</p>
+                      <p className="text-2xl font-black text-amber-800">3.3x</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Preparation */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  <section className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                    <h3 className="text-2xl font-black uppercase text-slate-900 mb-6 flex items-center gap-2"><Clock className="w-5 h-5" /> {t.miseEnPlace}</h3>
+                    <ul className="space-y-4">
+                      {sheet.miseEnPlace.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-4 font-medium text-slate-700">
+                          <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </section>
+                  <section>
+                    <h3 className="text-2xl font-black uppercase text-slate-900 mb-6 flex items-center gap-2"><FileText className="w-5 h-5" /> {t.steps}</h3>
+                    <div className="space-y-8">
+                      {sheet.preparationSteps.map((s) => (
+                        <div key={s.step} className="relative pl-12 border-l-2 border-slate-200 last:border-transparent pb-2">
+                          <span className="absolute -left-[21px] top-0 bg-slate-900 text-white font-black w-10 h-10 flex items-center justify-center rounded-2xl text-xs">{s.step}</span>
+                          <p className="text-lg font-bold text-slate-800 mb-2 leading-tight">{s.description}</p>
+                          <div className="flex gap-4">
+                            {s.temp && <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1 rounded-full text-slate-400 flex items-center gap-1"><Thermometer className="w-3 h-3" /> {s.temp}</span>}
+                            {s.time && <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1 rounded-full text-slate-400 flex items-center gap-1"><Clock className="w-3 h-3" /> {s.time}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
+
+                {/* Aesthetics & QC */}
+                <div className="bg-slate-900 p-10 lg:p-16 rounded-[3rem] text-white grid grid-cols-1 lg:grid-cols-3 gap-16">
+                  <div className="lg:col-span-2">
+                    <h3 className="text-3xl font-black text-amber-500 uppercase mb-8">{t.plating}</h3>
+                    <p className="text-xl text-slate-300 italic mb-10 leading-relaxed">{sheet.plating}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-white/10">
+                      <div>
+                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-4 tracking-widest">{t.variants}</h4>
+                        <p className="text-sm text-slate-400 font-medium leading-relaxed">{sheet.variants}</p>
+                      </div>
+                      <div>
+                        <h4 className="text-[10px] uppercase font-black text-slate-500 mb-4 tracking-widest">{t.allergens}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {sheet.allergens.map((alg, i) => (
+                            <span key={i} className="text-[10px] font-black bg-red-500/20 text-red-400 px-4 py-1.5 rounded-full border border-red-500/30 uppercase">{alg}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-white/5 p-8 rounded-[2.5rem] border border-white/10">
+                    <h3 className="text-xl font-black text-emerald-400 uppercase mb-6">{t.qc}</h3>
+                    <ul className="space-y-4 mb-10">
+                      {sheet.qcChecklist.map((q, i) => (
+                        <li key={i} className="flex items-start gap-3 text-sm text-slate-300">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" /> {q}
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-8 border-t border-white/10">
+                      <h4 className="text-[10px] uppercase font-black text-slate-500 mb-4">{t.conservation}</h4>
+                      <div className="space-y-4">
+                        <div className="flex justify-between bg-white/5 p-4 rounded-xl text-xs">
+                          <span className="text-slate-400 uppercase font-black">{t.refrig}</span>
+                          <span className="font-black">{sheet.conservation.refrigeration}</span>
+                        </div>
+                        <div className="flex justify-between bg-white/5 p-4 rounded-xl text-xs">
+                          <span className="text-slate-400 uppercase font-black">{t.freeze}</span>
+                          <span className="font-black">{sheet.conservation.freezing}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-                  <h3 className="text-lg font-bold text-amber-500 uppercase mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" /> {t.qc}
-                  </h3>
-                  <ul className="space-y-4">
-                    {sheet.qcChecklist.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-3 text-sm text-slate-300">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <div className="mt-6 pt-6 border-t border-slate-700">
-                    <h4 className="text-xs uppercase text-slate-500 font-bold mb-3">{t.conservation}</h4>
-                    <div className="space-y-2 text-xs">
-                      <p className="flex justify-between">
-                        <span className="text-slate-400 uppercase">{t.refrig}:</span>
-                        <span className="text-white font-semibold">{sheet.conservation.refrigeration}</span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span className="text-slate-400 uppercase">{t.freeze}:</span>
-                        <span className="text-white font-semibold">{sheet.conservation.freezing}</span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Image Prompt Footer */}
-              <div className="mt-12 pt-8 border-t border-slate-100 no-print">
-                <div className="bg-amber-50 border border-amber-200 p-4 rounded-lg flex gap-4 items-center">
-                  <div className="bg-amber-100 p-2 rounded-lg">
-                    <Search className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">{t.imagePrompt}</h4>
-                    <p className="text-sm text-amber-900 font-mono bg-white/50 p-2 rounded border border-amber-200 mt-2">
-                      {sheet.imagePrompt}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Signature Section for Print */}
-              <div className="mt-20 pt-10 border-t border-slate-200 hidden print:grid grid-cols-2 gap-10">
-                <div className="text-center">
-                  <div className="border-t border-slate-400 w-48 mx-auto mt-10"></div>
-                  <p className="text-xs uppercase text-slate-500 font-bold mt-2">{t.author}</p>
-                </div>
-                <div className="text-center">
-                  <div className="border-t border-slate-400 w-48 mx-auto mt-10"></div>
-                  <p className="text-xs uppercase text-slate-500 font-bold mt-2">{t.approval}</p>
+                {/* Signatures for PDF */}
+                <div className="hidden sm:grid grid-cols-2 gap-32 mt-32 pt-16 border-t-2 border-slate-100 no-print">
+                   <div className="text-center">
+                     <div className="h-0.5 bg-slate-200 mb-6 mx-auto w-48"></div>
+                     <p className="text-[10px] uppercase font-black text-slate-400 mb-1">{t.author}</p>
+                     <p className="text-xs font-black text-slate-900 uppercase">CHEFMASTER AI CERTIFIED</p>
+                   </div>
+                   <div className="text-center">
+                     <div className="h-0.5 bg-slate-200 mb-6 mx-auto w-48"></div>
+                     <p className="text-[10px] uppercase font-black text-slate-400 mb-1">{t.approval}</p>
+                     <p className="text-xs font-black text-slate-900 uppercase">OPERATIONS DEPT.</p>
+                   </div>
                 </div>
               </div>
             </div>
@@ -418,9 +414,14 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer Branding */}
-      <footer className="mt-12 text-center text-slate-400 text-xs no-print">
-        <p>© {new Date().getFullYear()} ChefMaster Pro | Software de Gestión Gastronómica de Alta Precisión</p>
+      {/* Footer */}
+      <footer className="py-12 text-center no-print">
+        <div className="inline-flex items-center gap-3 bg-white px-8 py-3 rounded-full border border-slate-200 shadow-xl">
+          <ChefHat className="w-5 h-5 text-amber-500" />
+          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">
+            © {new Date().getFullYear()} {t.title} | {t.footerText}
+          </p>
+        </div>
       </footer>
     </div>
   );

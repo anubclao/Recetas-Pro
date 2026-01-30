@@ -5,21 +5,29 @@ import { TechnicalSheet, Language } from "./types";
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export const generateTechnicalSheet = async (dishName: string, lang: Language): Promise<TechnicalSheet> => {
-  const systemInstruction = lang === 'es' 
-    ? `Actúa como un Chef Ejecutivo y Director de Costos con 20 años de experiencia. 
-      Utiliza precios de mercado actuales en Colombia (Bogotá/Medellín) en Pesos Colombianos (COP).
-      Cálculo de Precio Sugerido: Costo Total * 3.3 (230% markup). 
-      Redondea el precio final a la centena más cercana.
-      Toda la respuesta debe estar en ESPAÑOL.`
-    : `Act as an Executive Chef and Cost Director with 20 years of experience.
-      Use current market prices in Colombia (Bogotá/Medellín) in Colombian Pesos (COP).
-      Suggested Price Calculation: Total Cost * 3.3 (230% markup).
-      Round the final price to the nearest hundred.
-      The entire response must be in ENGLISH.`;
+  const isEs = lang === 'es';
+  
+  const systemInstruction = isEs 
+    ? `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
+      INSTRUCCIÓN CRÍTICA DE IDIOMA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL. NO MEZCLES INGLÉS.
+      - Mercado: Colombia (Precios actuales en COP).
+      - Cálculo de Precio Sugerido: Aplica un markup del 230% sobre el costo total, lo que equivale a multiplicar por 3.3 (Costo x 3.3).
+      - Redondeo: Redondea el precio final sugerido a la centena más cercana (ej. 45.820 -> 45.800).
+      - Formato: Retorna estrictamente el JSON siguiendo el esquema proporcionado.`
+    : `YOU ARE AN EXPERT EXECUTIVE CHEF AND COST DIRECTOR WITH 20 YEARS OF EXPERIENCE.
+      CRITICAL LANGUAGE INSTRUCTION: THE ENTIRE RESPONSE MUST BE EXCLUSIVELY IN ENGLISH. DO NOT MIX SPANISH.
+      - Market: Colombia (Current prices in COP).
+      - Suggested Price Calculation: Apply a 230% markup over the total cost, which equals a multiplier of 3.3 (Cost x 3.3).
+      - Rounding: Round the final suggested price to the nearest hundred.
+      - Format: Strictly return the JSON following the provided schema.`;
+
+  const prompt = isEs
+    ? `Genera una ficha técnica gastronómica completa y ultra-precisa para el plato: "${dishName}". Recuerda: Todo en español, precios en COP, markup 3.3x.`
+    : `Generate a complete and ultra-precise gastronomic technical sheet for the dish: "${dishName}". Remember: Everything in English, prices in COP, 3.3x markup.`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Generate a ultra-precise Gastronomic Technical Sheet for the dish: "${dishName}" for the Colombian market.`,
+    contents: prompt,
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -94,7 +102,7 @@ export const generateDishImage = async (prompt: string): Promise<string> => {
     contents: {
       parts: [
         {
-          text: `A high-end, professional culinary photograph of the following dish: ${prompt}. Studio lighting, 8k resolution, food photography style.`,
+          text: `Fine dining restaurant plating of ${prompt}. Modern culinary style, bright soft lighting, high contrast, clean background, 4k macro photography.`,
         },
       ],
     },
