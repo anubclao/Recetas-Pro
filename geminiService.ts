@@ -2,10 +2,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TechnicalSheet } from "./types";
 
-// Inicializar AI directamente desde la variable de entorno.
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
+  // Inicializamos dentro de la función para asegurar que process.env esté actualizado
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
     INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
     - Mercado: Colombia (Precios actuales en COP).
@@ -18,7 +18,7 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: [{ parts: [{ text: promptText }] }],
+    contents: promptText, // Formato simplificado y correcto para texto
     config: {
       systemInstruction,
       responseMimeType: "application/json",
@@ -100,15 +100,16 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
 };
 
 export const generateDishImage = async (prompt: string): Promise<string> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
-    contents: [{
+    contents: {
       parts: [
         {
           text: `Fotografía profesional de comida: ${prompt}. Emplatado de restaurante gourmet, profundidad de campo reducida, iluminación natural, presentación elegante.`,
         },
       ],
-    }],
+    },
     config: {
       imageConfig: {
         aspectRatio: "1:1"
