@@ -3,12 +3,8 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { TechnicalSheet } from "./types";
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) {
-    throw new Error("CONFIG_ERROR: La variable API_KEY no está configurada en Vercel.");
-  }
-
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+  // Acceso directo a process.env para que el bundler de Vercel pueda inyectar la clave correctamente
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS CON 20 AÑOS DE EXPERIENCIA. 
     INSTRUCCIÓN CRÍTICA: TODA LA RESPUESTA DEBE ESTAR EXCLUSIVAMENTE EN ESPAÑOL.
@@ -20,7 +16,7 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Genera una ficha técnica gastronómica profesional para: "${dishName}"`,
+      contents: `Genera una ficha técnica profesional y detallada para el plato: "${dishName}"`,
       config: {
         systemInstruction,
         responseMimeType: "application/json",
@@ -87,32 +83,28 @@ export const generateTechnicalSheet = async (dishName: string): Promise<Technica
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("La API no devolvió contenido.");
-    return JSON.parse(text) as TechnicalSheet;
+    if (!response.text) throw new Error("La API devolvió una respuesta vacía.");
+    return JSON.parse(response.text) as TechnicalSheet;
   } catch (err: any) {
-    console.error("Error en Gemini Service:", err);
+    console.error("Error crítico en Gemini:", err);
     throw err;
   }
 };
 
 export const generateDishImage = async (prompt: string): Promise<string> => {
-  const apiKey = process.env.API_KEY;
-  if (!apiKey) return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format";
-
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
-      contents: { parts: [{ text: `High-end food photography, professional plating: ${prompt}` }] },
+      contents: { parts: [{ text: `Fotografía profesional de alta cocina, emplatado gourmet: ${prompt}` }] },
       config: { imageConfig: { aspectRatio: "1:1" } }
     });
 
     const part = response.candidates[0].content.parts.find(p => p.inlineData);
-    if (!part?.inlineData) throw new Error("Sin datos de imagen");
+    if (!part?.inlineData) throw new Error("No image data");
     return `data:image/png;base64,${part.inlineData.data}`;
   } catch (err) {
-    console.warn("Fallo generación de imagen, usando fallback:", err);
+    console.warn("Fallo imagen, usando fallback:", err);
     return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format";
   }
 };
