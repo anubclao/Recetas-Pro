@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { generateTechnicalSheet, generateDishImage } from './geminiService';
-import { TechnicalSheet, Language } from './types';
+import { generateTechnicalSheet, generateDishImage } from './geminiService.ts';
+import { TechnicalSheet, Language } from './types.ts';
 import { 
   ChefHat, 
   Download, 
