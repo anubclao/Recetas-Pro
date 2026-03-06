@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateTechnicalSheet, generateDishImage } from './geminiService';
 import { TechnicalSheet, Ingredient } from './types';
+import * as userService from './userService';
 import { 
   Download, 
   Search, 
@@ -117,21 +118,14 @@ const App: React.FC = () => {
 
   const fetchUserStatus = async (email: string) => {
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-        localStorage.setItem('chefmaster_user', JSON.stringify(data));
-        if (!data.isAuthorized && !data.isAdmin) {
-          setShowPending(true);
-        } else {
-          setShowAuth(false);
-          setShowPending(false);
-        }
+      const data = await userService.loginUser(email);
+      setUser(data);
+      localStorage.setItem('chefmaster_user', JSON.stringify(data));
+      if (!data.isAuthorized && !data.isAdmin) {
+        setShowPending(true);
+      } else {
+        setShowAuth(false);
+        setShowPending(false);
       }
     } catch (err) {
       console.error("Error fetching user status", err);
@@ -140,11 +134,8 @@ const App: React.FC = () => {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await fetch('/api/users');
-      if (res.ok) {
-        const data = await res.json();
-        setAllUsers(data);
-      }
+      const data = userService.getUsers();
+      setAllUsers(data);
     } catch (err) {
       console.error("Error fetching all users", err);
     }
@@ -153,38 +144,30 @@ const App: React.FC = () => {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const endpoint = authMode === 'login' ? '/api/login' : '/api/register';
     try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authForm)
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data);
-        localStorage.setItem('chefmaster_user', JSON.stringify(data));
-        if (!data.isAuthorized && !data.isAdmin) {
-          setShowPending(true);
-        } else {
-          setShowAuth(false);
-          setShowPending(false);
-        }
+      let data;
+      if (authMode === 'login') {
+        data = await userService.loginUser(authForm.email);
       } else {
-        setError({ message: data.error || "Error en la autenticación", type: 'auth' });
+        data = await userService.registerUser(authForm.name, authForm.email);
       }
-    } catch (err) {
-      setError({ message: "Error de conexión al servidor", type: 'auth' });
+      
+      setUser(data);
+      localStorage.setItem('chefmaster_user', JSON.stringify(data));
+      if (!data.isAuthorized && !data.isAdmin) {
+        setShowPending(true);
+      } else {
+        setShowAuth(false);
+        setShowPending(false);
+      }
+    } catch (err: any) {
+      setError({ message: err.message || "Error en la autenticación", type: 'auth' });
     }
   };
 
   const handleAuthorize = async (userId: string, isAuthorized: boolean) => {
     try {
-      await fetch('/api/users/authorize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, isAuthorized })
-      });
+      await userService.authorizeUser(userId, isAuthorized);
       fetchAllUsers();
     } catch (err) {
       console.error("Error authorizing user", err);
@@ -194,7 +177,7 @@ const App: React.FC = () => {
   const handleDeleteUser = async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este usuario?")) return;
     try {
-      await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      await userService.deleteUser(id);
       fetchAllUsers();
     } catch (err) {
       console.error("Error deleting user", err);
@@ -205,11 +188,7 @@ const App: React.FC = () => {
     e.preventDefault();
     if (!editingUser) return;
     try {
-      await fetch('/api/users/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingUser)
-      });
+      await userService.updateUser(editingUser);
       setEditingUser(null);
       fetchAllUsers();
     } catch (err) {
@@ -239,11 +218,7 @@ const App: React.FC = () => {
       setSheet({ ...data, imageUrl });
       
       // Increment query count
-      await fetch('/api/queries/increment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email })
-      });
+      await userService.incrementQueries(user.email);
     } catch (err: any) {
       const isOverload = err.message?.includes("503") || err.message?.includes("overloaded") || err.message?.includes("UNAVAILABLE");
       setError({
