@@ -21,8 +21,8 @@ async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promis
 }
 
 export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
-  const apiKey = import.meta.env.VITE_API_KEY || '';         // ✅ Cambio 2
-  const ai = new GoogleGenerativeAI(apiKey);                  // ✅ Cambio 3
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  const ai = new GoogleGenAI({ apiKey });
   
   const systemInstruction = `ERES UN CHEF EJECUTIVO Y DIRECTOR DE COSTOS PRO.
     TU OBJETIVO ES CREAR FICHAS TÉCNICAS CON CÁLCULO DE MERMA PROFESIONAL.
