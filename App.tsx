@@ -104,7 +104,6 @@ const App: React.FC = () => {
   
   const [dishName, setDishName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [exporting, setExporting] = useState(false);
   const [sheet, setSheet] = useState<TechnicalSheet | null>(null);
   const [error, setError] = useState<{ message: string; type: 'overload' | 'generic' | 'auth' } | null>(null);
 
@@ -247,54 +246,6 @@ const App: React.FC = () => {
 
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleExportPDF = async () => {
-    const element = document.getElementById('printable-area');
-    if (!element || !sheet) {
-      console.error("No element or sheet found for PDF export");
-      return;
-    }
-    
-    // Check if html2pdf is available
-    const h2p = (window as any).html2pdf;
-    if (!h2p) {
-      alert("El generador de PDF aún se está cargando o no está disponible. Por favor, usa la opción de 'Imprimir' o recarga la página.");
-      return;
-    }
-
-    setExporting(true);
-    try {
-      console.log("Starting PDF export for:", sheet.dishName);
-      
-      // Temporary style to ensure background colors are printed
-      const originalStyle = element.style.cssText;
-      
-      const opt = {
-        margin: 10,
-        filename: `Ficha_${sheet.dishName.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 0.95 },
-        html2canvas: { 
-          scale: 1.5,
-          useCORS: true,
-          logging: false,
-          letterRendering: true,
-          scrollY: -window.scrollY // Fix for scrolled elements
-        },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-      
-      // Use the promise-based API of html2pdf
-      await h2p().from(element).set(opt).save();
-      console.log("PDF export successful");
-    } catch (err) {
-      console.error("PDF Export error:", err);
-      alert("Error al generar el PDF. Usando la función de impresión del sistema como alternativa...");
-      handlePrint();
-    } finally {
-      setExporting(false);
-    }
   };
 
   const handleNewSearch = () => {
@@ -669,18 +620,10 @@ const App: React.FC = () => {
                </div>
                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                  <button 
-                   onClick={handleExportPDF} 
-                   disabled={exporting}
-                   className="flex-1 md:flex-none bg-slate-900 text-white px-8 py-4 rounded-full hover:bg-slate-800 transition-all font-black text-xs flex items-center justify-center gap-3 shadow-xl disabled:opacity-50"
-                 >
-                    {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                    DESCARGAR PDF
-                 </button>
-                 <button 
                    onClick={handlePrint}
-                   className="flex-1 md:flex-none bg-white text-slate-900 px-8 py-4 rounded-full border-2 border-slate-900 hover:bg-slate-50 transition-all font-black text-xs flex items-center justify-center gap-3 shadow-md"
+                   className="w-full md:w-auto bg-slate-900 text-white px-12 py-4 rounded-full hover:bg-slate-800 transition-all font-black text-xs flex items-center justify-center gap-3 shadow-xl"
                  >
-                    <FileText size={16} /> IMPRIMIR
+                    <FileText size={16} /> IMPRIMIR FICHA TÉCNICA
                  </button>
                </div>
             </div>
