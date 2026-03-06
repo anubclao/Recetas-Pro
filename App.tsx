@@ -128,7 +128,8 @@ const App: React.FC = () => {
         setShowPending(false);
       }
     } catch (err) {
-      console.error("Error fetching user status", err);
+      console.error("Session expired or user not found:", email);
+      handleLogout();
     }
   };
 
@@ -220,10 +221,15 @@ const App: React.FC = () => {
       // Increment query count
       await userService.incrementQueries(user.email);
     } catch (err: any) {
+      console.error("Generation error:", err);
       const isOverload = err.message?.includes("503") || err.message?.includes("overloaded") || err.message?.includes("UNAVAILABLE");
+      const isMissingKey = err.message?.includes("API key") || err.message?.includes("API_KEY");
+      
       setError({
         message: isOverload 
           ? "Nuestros servidores están saturados. Por favor, reintenta en un momento."
+          : isMissingKey
+          ? "Error de configuración: La API Key de Gemini no está configurada en el servidor/Vercel."
           : (err.message || "No pudimos procesar tu solicitud."),
         type: isOverload ? 'overload' : 'generic'
       });
