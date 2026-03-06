@@ -2,6 +2,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { GoogleGenAI } from "@google/genai";
+
+// Global fallback for SDK internal references
+if (typeof window !== 'undefined') {
+  (window as any).GoogleGenerativeAI = GoogleGenAI;
+}
 
 try {
   const rootElement = document.getElementById('root');
