@@ -20,9 +20,6 @@ async function withRetry<T>(fn: () => Promise<T>, retries = MAX_RETRIES): Promis
   }
 }
 
-- export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
--   const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
--  const ai = new GoogleGenAI({ apiKey });
   export const generateTechnicalSheet = async (dishName: string): Promise<TechnicalSheet> => {
   const apiKey = import.meta.env.VITE_API_KEY || '';         // ✅ Cambio 2
   const ai = new GoogleGenerativeAI(apiKey);                  // ✅ Cambio 3
