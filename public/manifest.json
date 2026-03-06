@@ -1,0 +1,21 @@
+{
+  "name": "ChefMaster Pro - Onesixteen Hotel",
+  "short_name": "ChefMaster",
+  "description": "Gestión de Costos & Fichas Técnicas Gastronómicas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "https://www.onesixteenhotel.com/wp-content/uploads/2021/08/logo-one-116-hotel.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://www.onesixteenhotel.com/wp-content/uploads/2021/08/logo-one-116-hotel.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
