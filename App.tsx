@@ -211,12 +211,19 @@ const App: React.FC = () => {
 
     setLoading(true);
     setError(null);
-    setSheet(null);
+    setSheet(null); // Clear previous result
     
     try {
+      // 1. Generate the technical sheet first (fastest)
       const data = await generateTechnicalSheet(dishName);
-      const imageUrl = await generateDishImage(data.imagePrompt || data.dishName);
-      setSheet({ ...data, imageUrl });
+      setSheet(data); // Show data immediately
+      
+      // 2. Generate the image in the background
+      generateDishImage(dishName).then(imageUrl => {
+        setSheet(prev => prev ? { ...prev, imageUrl } : null);
+      }).catch(err => {
+        console.error("Background image generation failed:", err);
+      });
       
       // Increment query count
       await userService.incrementQueries(user.email);
@@ -238,23 +245,65 @@ const App: React.FC = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const handleExportPDF = async () => {
     const element = document.getElementById('printable-area');
-    if (!element || !sheet) return;
+    if (!element || !sheet) {
+      console.error("No element or sheet found for PDF export");
+      return;
+    }
+    
+    // Check if html2pdf is available
+    const h2p = (window as any).html2pdf;
+    if (!h2p) {
+      alert("El generador de PDF aún se está cargando o no está disponible. Por favor, usa la opción de 'Imprimir' o recarga la página.");
+      return;
+    }
+
     setExporting(true);
     try {
+      console.log("Starting PDF export for:", sheet.dishName);
+      
+      // Temporary style to ensure background colors are printed
+      const originalStyle = element.style.cssText;
+      
       const opt = {
-        margin: [10, 10, 10, 10],
-        filename: `Ficha_ChefMaster_${sheet.dishName.replace(/\s+/g, '_')}.pdf`,
-        image: { type: 'jpeg', quality: 1 },
-        html2canvas: { scale: 3, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        margin: 10,
+        filename: `Ficha_${sheet.dishName.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 0.95 },
+        html2canvas: { 
+          scale: 1.5,
+          useCORS: true,
+          logging: false,
+          letterRendering: true,
+          scrollY: -window.scrollY // Fix for scrolled elements
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
-      // @ts-ignore
-      await html2pdf().from(element).set(opt).save();
+      
+      // Use the promise-based API of html2pdf
+      await h2p().from(element).set(opt).save();
+      console.log("PDF export successful");
+    } catch (err) {
+      console.error("PDF Export error:", err);
+      alert("Error al generar el PDF. Usando la función de impresión del sistema como alternativa...");
+      handlePrint();
     } finally {
       setExporting(false);
     }
+  };
+
+  const handleNewSearch = () => {
+    setSheet(null);
+    setDishName('');
+    setError(null);
+    // Focus the input
+    const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+    if (input) input.focus();
   };
 
   return (
@@ -606,14 +655,34 @@ const App: React.FC = () => {
 
         {sheet && !loading && (
           <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <div className="flex justify-between items-center mb-8 no-print">
-               <div className="bg-emerald-50 text-emerald-700 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-3">
-                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div> Ficha de Ingeniería Activa
+            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 no-print">
+               <div className="flex items-center gap-4">
+                 <div className="bg-emerald-50 text-emerald-700 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-100 flex items-center gap-3">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></div> Ficha de Ingeniería Activa
+                 </div>
+                 <button 
+                   onClick={handleNewSearch}
+                   className="bg-white text-slate-500 px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest border border-slate-200 hover:bg-slate-50 transition-all flex items-center gap-2"
+                 >
+                   <RefreshCw size={14} /> NUEVA CONSULTA
+                 </button>
                </div>
-               <button onClick={handleExportPDF} className="bg-slate-900 text-white px-10 py-4 rounded-full hover:bg-slate-800 transition-all font-black text-xs flex items-center gap-3 shadow-xl">
-                  {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                  EXPORTAR PDF TÉCNICO
-               </button>
+               <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                 <button 
+                   onClick={handleExportPDF} 
+                   disabled={exporting}
+                   className="flex-1 md:flex-none bg-slate-900 text-white px-8 py-4 rounded-full hover:bg-slate-800 transition-all font-black text-xs flex items-center justify-center gap-3 shadow-xl disabled:opacity-50"
+                 >
+                    {exporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                    DESCARGAR PDF
+                 </button>
+                 <button 
+                   onClick={handlePrint}
+                   className="flex-1 md:flex-none bg-white text-slate-900 px-8 py-4 rounded-full border-2 border-slate-900 hover:bg-slate-50 transition-all font-black text-xs flex items-center justify-center gap-3 shadow-md"
+                 >
+                    <FileText size={16} /> IMPRIMIR
+                 </button>
+               </div>
             </div>
 
             <article className="bg-white shadow-2xl rounded-[3rem] overflow-hidden border border-slate-200" id="printable-area">
@@ -628,19 +697,32 @@ const App: React.FC = () => {
                     </div>
                     <p className="mt-10 text-slate-300 italic text-xl leading-relaxed max-w-2xl border-l-4 border-amber-500/40 pl-8">"{sheet.description}"</p>
                   </div>
-                  <div className="flex flex-col items-center lg:items-end gap-10">
-                    <div className="bg-white/5 backdrop-blur-lg p-8 rounded-[2.5rem] text-center border border-white/10 w-full md:min-w-[300px]">
-                      <p className="text-[10px] uppercase font-black text-amber-500 mb-2 tracking-[0.2em]">PVP Recomendado</p>
-                      <p className="text-6xl font-black tracking-tighter">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
-                      <div className="mt-4 pt-4 border-t border-white/10 flex justify-between text-[9px] font-black text-slate-500 uppercase">
-                        <span>Costo Ideal: 30%</span>
-                        <span>COP / UNID</span>
+                    <div className="flex flex-col items-center lg:items-end gap-10">
+                      <div className="bg-white/5 backdrop-blur-lg p-8 rounded-[2.5rem] text-center border border-white/10 w-full md:min-w-[300px]">
+                        <p className="text-[10px] uppercase font-black text-amber-500 mb-2 tracking-[0.2em]">PVP Recomendado</p>
+                        <p className="text-6xl font-black tracking-tighter">${sheet.financials.suggestedPrice.toLocaleString('es-CO')}</p>
+                        <div className="mt-4 pt-4 border-t border-white/10 flex justify-between text-[9px] font-black text-slate-500 uppercase">
+                          <span>Costo Ideal: 30%</span>
+                          <span>COP / UNID</span>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        {sheet.imageUrl ? (
+                          <motion.img 
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            src={sheet.imageUrl} 
+                            className="w-56 h-56 object-cover rounded-[3rem] border-8 border-white shadow-2xl" 
+                            alt={sheet.dishName} 
+                          />
+                        ) : (
+                          <div className="w-56 h-56 bg-slate-800 rounded-[3rem] border-8 border-slate-700 flex flex-col items-center justify-center text-slate-500 gap-3">
+                            <Loader2 className="animate-spin" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Generando Imagen...</span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    {sheet.imageUrl && (
-                      <img src={sheet.imageUrl} className="w-56 h-56 object-cover rounded-[3rem] border-8 border-white shadow-2xl" alt={sheet.dishName} />
-                    )}
-                  </div>
                 </div>
               </div>
 
